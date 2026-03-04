@@ -1,454 +1,901 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luna — 婦科健康實驗平台</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #fff0f5;
-            --surface: #fff5f8;
-            --surface2: #ffe8f0;
-            --border: #f4c6d8;
-            --accent: #d63384;
-            --accent-soft: #e8779a;
-            --accent-light: #ffe0ec;
-            --pink-deep: #c2185b;
-            --pink-pale: #fce4ec;
-            --pink-mid: #f48fb1;
-            --text: #2d1b26;
-            --text-mid: #6b3a52;
-            --text-muted: #b07090;
-            --luna-bubble: #fff0f6;
-            --user-bubble: #ffffff;
-            --radius: 18px;
-            --shadow: 0 4px 20px rgba(180,60,100,0.08);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luna — Sahabat Kesehatan</title>
+<style>
+  :root {
+    --bg: #fff0f5;
+    --surface: #fff5f8;
+    --surface2: #ffe8f0;
+    --border: #f4c6d8;
+    --accent: #d63384;
+    --accent-soft: #e8779a;
+    --accent-light: #ffe0ec;
+    --pink-deep: #c2185b;
+    --pink-pale: #fce4ec;
+    --pink-mid: #f48fb1;
+    --teal: #00897b;
+    --text: #2d1b26;
+    --text-mid: #6b3a52;
+    --text-muted: #b07090;
+    --luna-bubble: #fff0f6;
+    --user-bubble: #f9f0ff;
+    --radius: 18px;
+    --shadow: 0 2px 20px rgba(180,60,100,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
+  /* LEFT PANEL */
+  #left-panel {
+    width: 360px;
+    min-width: 300px;
+    background: var(--surface);
+    border-right: 1.5px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  #left-panel.collapsed {
+    width: 0;
+    min-width: 0;
+    border-right: none;
+  }
+  #left-panel.collapsed > * {
+    opacity: 0;
+    pointer-events: none;
+  }
 
-        /* --- 左側面板 --- */
-        #left-panel {
-            width: 380px;
-            background: var(--surface);
-            border-right: 1.5px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease, width 0.3s ease;
-            z-index: 50;
-        }
-        #left-panel.collapsed { width: 0; transform: translateX(-100%); overflow: hidden; }
+  /* Toggle button */
+  #toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 360px;
+    z-index: 100;
+    width: 22px; height: 48px;
+    background: var(--accent);
+    border: none;
+    border-radius: 0 12px 12px 0;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 2px 0 10px rgba(214,51,132,0.25);
+    transition: left 0.35s cubic-bezier(0.4,0,0.2,1), background 0.2s;
+  }
+  #toggle-btn:hover { background: var(--pink-deep); }
+  #toggle-btn svg {
+    width: 12px; height: 12px; fill: white;
+    transition: transform 0.35s;
+  }
+  #toggle-btn.collapsed-btn {
+    left: 0;
+  }
+  #toggle-btn.collapsed-btn svg {
+    transform: rotate(180deg);
+  }
+  .panel-header {
+    padding: 22px 22px 15px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #ffe4ef 0%, #ffd6e7 100%);
+  }
+  .panel-header .eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.16em; color: var(--accent);
+    text-transform: uppercase; margin-bottom: 5px;
+  }
+  .panel-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px; font-weight: 700;
+    color: var(--text); line-height: 1.3;
+  }
+  .panel-header p {
+    margin-top: 5px; font-size: 12px;
+    color: var(--text-mid); line-height: 1.6;
+  }
+  .panel-body {
+    flex: 1; overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        .panel-header {
-            padding: 24px;
-            background: linear-gradient(135deg, #ffe4ef 0%, #ffd6e7 100%);
-            border-bottom: 1px solid var(--border);
-        }
-        .eyebrow { font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; }
-        .panel-header h2 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); }
+  .batch-label input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; padding: 8px 12px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .batch-label input:focus { border-color: var(--accent-soft); }
+  .batch-label input::placeholder { color: var(--text-muted); }
 
-        .api-section { padding: 16px 24px; border-bottom: 1px solid var(--border); background: #fffafc; }
-        .api-row { display: flex; gap: 8px; margin-top: 8px; }
-        .api-input-wrap { flex: 1; position: relative; }
-        .api-input-wrap input {
-            width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid var(--border);
-            font-family: monospace; font-size: 12px; outline: none;
-        }
-        .btn-save { background: var(--accent); color: white; border: none; padding: 0 16px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 12px; }
+  #knowledge-input {
+    resize: none;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text);
+    font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+    font-size: 13px; line-height: 1.7;
+    padding: 12px 14px; outline: none;
+    transition: border-color 0.2s; min-height: 120px;
+  }
+  #knowledge-input:focus { border-color: var(--accent-soft); }
+  #knowledge-input::placeholder { color: var(--text-muted); }
 
-        .panel-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-        #knowledge-input {
-            width: 100%; height: 120px; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border);
-            font-size: 13px; resize: none; outline: none; background: white;
-        }
-        .batch-name-input { width: 100%; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 13px; margin-bottom: 8px; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-primary {
+    flex: 1;
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+    color: white; border: none; border-radius: 12px;
+    padding: 10px 16px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px rgba(214,51,132,0.25);
+  }
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: var(--accent);
+    border: 1.5px solid var(--accent); border-radius: 12px;
+    padding: 10px 14px; font-family: 'DM Sans', sans-serif;
+    font-size: 12px; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-secondary:hover { background: var(--accent-light); }
 
-        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 700; transition: 0.2s; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  .section-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-top: 4px;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.12em; color: var(--accent);
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-title::before {
+    content: ''; display: inline-block;
+    width: 3px; height: 12px;
+    background: var(--accent); border-radius: 2px;
+  }
+  .db-count {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 2px 8px;
+  }
 
-        .log-item { background: white; border: 1px solid var(--border); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; }
-        .log-delete { color: var(--text-muted); cursor: pointer; font-size: 18px; border: none; background: none; }
+  #training-log { display: flex; flex-direction: column; gap: 7px; }
+  .log-item {
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 13px;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    animation: slideIn 0.25s ease;
+    box-shadow: 0 1px 4px rgba(200,60,100,0.05);
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+  .log-item-left { display: flex; align-items: center; gap: 10px; }
+  .log-num {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--pink-pale); color: var(--accent);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .log-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .log-chars { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .log-delete {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 16px; line-height: 1;
+    padding: 2px 6px; border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .log-delete:hover { color: #c0392b; background: #fde8e8; }
+  .log-empty {
+    font-size: 12.5px; color: var(--text-muted);
+    text-align: center; padding: 18px 0; font-style: italic;
+  }
 
-        /* --- 右側面板 --- */
-        #right-panel { flex: 1; display: flex; flex-direction: column; position: relative; background: white; }
-        
-        #toggle-btn {
-            position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-            background: var(--accent); color: white; border: none; padding: 15px 5px;
-            border-radius: 0 10px 10px 0; cursor: pointer; z-index: 100;
-        }
+  .total-badge {
+    background: var(--pink-pale); border: 1px solid var(--pink-mid);
+    color: var(--pink-deep); border-radius: 10px;
+    padding: 8px 14px; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
 
-        #chat-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: white; }
-        .luna-avatar { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; }
-        
-        .tab-bar { display: flex; border-bottom: 1px solid var(--border); padding: 0 24px; background: #fafafa; }
-        .tab-btn { padding: 12px 20px; border: none; background: none; cursor: pointer; color: var(--text-muted); font-weight: 500; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .activate-btn {
+    background: linear-gradient(135deg, #f48fb1, var(--pink-deep));
+    color: white; border: none; border-radius: 14px;
+    padding: 13px 16px; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 4px 14px rgba(194,24,91,0.3);
+    letter-spacing: 0.03em;
+  }
+  .activate-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 
-        #messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; background: #fffcfd; }
-        .message { max-width: 85%; display: flex; flex-direction: column; gap: 6px; }
-        .message.user { align-self: flex-end; align-items: flex-end; }
-        .message.bot { align-self: flex-start; }
-        .bubble { padding: 14px 18px; border-radius: 20px; font-size: 14px; line-height: 1.6; position: relative; }
-        .user .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-        .bot .bubble { background: var(--luna-bubble); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); }
+  /* RIGHT PANEL */
+  #right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); box-shadow: var(--shadow);
+  }
+  .luna-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(214,51,132,0.3);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .header-info h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 700; color: var(--text);
+  }
+  .header-info .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
+  .lang-badge {
+    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    background: var(--pink-pale); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 12px;
+    font-size: 11px; color: var(--pink-deep); font-weight: 500;
+  }
+  .online-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #e91e8c; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-        .lang-divider { border-top: 1px solid rgba(214,51,132,0.15); margin: 10px 0; padding-top: 10px; font-size: 11px; color: var(--accent); font-weight: 700; text-transform: uppercase; }
+  #messages {
+    flex: 1; overflow-y: auto;
+    padding: 22px 26px;
+    display: flex; flex-direction: column; gap: 18px;
+    background: linear-gradient(180deg, #fff5f8 0%, #fff0f5 100%);
+  }
+  #messages::-webkit-scrollbar { width: 4px; }
+  #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        #input-area { padding: 20px; border-top: 1px solid var(--border); display: flex; gap: 12px; background: white; }
-        #user-input { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px; outline: none; resize: none; max-height: 150px; }
-        #send-btn { background: var(--accent); color: white; border: none; width: 48px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .message {
+    display: flex; gap: 10px; max-width: 82%;
+    animation: fadeUp 0.28s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.bot { align-self: flex-start; }
 
-        /* --- 實驗記錄面板 --- */
-        #exp-panel { flex: 1; display: none; padding: 30px; overflow-y: auto; }
-        #exp-panel.active { display: block; }
-        .exp-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
-        .exp-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 10px; }
-        .tag-db { background: #e8f5e9; color: #2e7d32; }
-        .tag-nodb { background: #fff3e0; color: #e65100; }
-        
-        .typing { display: flex; gap: 4px; padding: 10px; }
-        .dot { width: 6px; height: 6px; background: var(--accent-soft); border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-    </style>
+  .msg-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; font-size: 17px; margin-top: 4px;
+  }
+  .message.bot .msg-avatar {
+    background: linear-gradient(135deg, #f8bbd9, #d63384);
+    box-shadow: 0 2px 8px rgba(214,51,132,0.25);
+    overflow: hidden;
+  }
+  .message.user .msg-avatar {
+    background: var(--user-bubble); border: 1px solid var(--border);
+  }
+  .bubble-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .sender-name { font-size: 11px; color: var(--text-muted); padding: 0 4px; }
+  .msg-time { font-size: 10px; color: var(--text-muted); opacity: 0.7; margin-left: 4px; }
+  .message.user .sender-name { text-align: right; }
+
+  .bubble {
+    padding: 12px 16px; font-size: 14px; line-height: 1.8;
+    box-shadow: 0 1px 6px rgba(180,60,100,0.07);
+    border-radius: var(--radius);
+  }
+  .message.bot .bubble {
+    background: var(--luna-bubble);
+    border: 1px solid #f9c6da;
+    border-top-left-radius: 4px; color: var(--text);
+  }
+  .message.user .bubble {
+    background: white; border: 1px solid var(--border);
+    border-top-right-radius: 4px; color: var(--text);
+  }
+
+  /* Bilingual divider */
+  .lang-divider {
+    display: flex; align-items: center; gap: 8px;
+    margin: 10px 0 8px;
+  }
+  .lang-divider::before, .lang-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+  .lang-divider span {
+    font-size: 10px; letter-spacing: 0.1em;
+    color: var(--accent); font-weight: 600; text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .zh-section { color: var(--text); }
+  .id-section { color: var(--text-mid); }
+
+  .typing-indicator { display: flex; gap: 5px; padding: 4px 2px; }
+  .typing-indicator span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-soft); animation: bounce 1.2s infinite;
+  }
+  .typing-indicator span:nth-child(2){animation-delay:0.2s}
+  .typing-indicator span:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+
+  .system-msg {
+    align-self: center; font-size: 12px; color: var(--text-muted);
+    background: white; border: 1px solid var(--border);
+    border-radius: 20px; padding: 6px 16px;
+    box-shadow: 0 1px 4px rgba(200,60,100,0.06);
+  }
+
+  #input-area {
+    padding: 14px 22px; border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  #user-input {
+    flex: 1; background: white;
+    border: 1.5px solid var(--border); border-radius: 16px;
+    color: var(--text); font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
+    font-size: 14px; padding: 11px 16px; resize: none;
+    outline: none; max-height: 110px; line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+  #user-input:focus { border-color: var(--accent-soft); }
+  #user-input::placeholder { color: var(--text-muted); }
+  #send-btn {
+    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
+    border: none; border-radius: 14px;
+    width: 46px; height: 46px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.2s, transform 0.15s;
+    box-shadow: 0 3px 12px rgba(214,51,132,0.3);
+  }
+  #send-btn:hover { opacity: 0.88; transform: scale(1.05); }
+  #send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+  #send-btn svg { width: 20px; height: 20px; fill: white; }
+
+  /* ===== TAB SWITCHER ===== */
+  .tab-bar {
+    display: flex; gap: 4px;
+    padding: 10px 24px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .tab-btn {
+    padding: 8px 18px; font-size: 13px; font-weight: 500;
+    border: none; background: transparent; cursor: pointer;
+    color: var(--text-muted); border-radius: 10px 10px 0 0;
+    border-bottom: 2.5px solid transparent;
+    font-family: 'DM Sans', sans-serif;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  }
+  .tab-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+  /* ===== EXPERIMENT LOG PANEL ===== */
+  #exp-panel {
+    flex: 1; overflow-y: auto;
+    padding: 24px 28px;
+    background: linear-gradient(180deg, #fff5f8 0%, #fff0f5 100%);
+    display: none; flex-direction: column; gap: 16px;
+  }
+  #exp-panel.active { display: flex; }
+
+  .exp-header-row {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .exp-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700; color: var(--text);
+  }
+  .exp-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .export-btn {
+    background: var(--accent); color: white; border: none;
+    border-radius: 10px; padding: 8px 16px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+    transition: opacity 0.2s;
+  }
+  .export-btn:hover { opacity: 0.85; }
+
+  .exp-stats {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    box-shadow: 0 1px 6px rgba(200,60,100,0.06);
+  }
+  .stat-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .stat-value { font-size: 24px; font-weight: 700; color: var(--accent); margin-top: 4px; font-family: 'Playfair Display', serif; }
+  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  .exp-section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase;
+    display: flex; align-items: center; gap: 6px; margin-top: 8px;
+  }
+  .exp-section-title::before {
+    content: ''; width: 3px; height: 12px;
+    background: var(--accent); border-radius: 2px; display: inline-block;
+  }
+
+  .exp-entry {
+    background: white; border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 16px;
+    box-shadow: 0 1px 6px rgba(200,60,100,0.05);
+    animation: slideIn 0.2s ease;
+  }
+  .exp-entry-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .exp-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 3px 9px; border-radius: 20px; text-transform: uppercase;
+  }
+  .tag-no-db { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
+  .tag-with-db { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .exp-batch-info { font-size: 11px; color: var(--text-muted); }
+  .exp-time { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+
+  .exp-q { font-size: 13px; color: var(--text-mid); margin-bottom: 6px; }
+  .exp-q strong { color: var(--text); font-weight: 600; }
+  .exp-a { font-size: 13px; color: var(--text); line-height: 1.7; }
+  .exp-a-label { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+
+  .exp-empty {
+    text-align: center; padding: 48px 0;
+    color: var(--text-muted); font-size: 14px; font-style: italic;
+  }
+  .exp-date-group { display: flex; flex-direction: column; gap: 8px; }
+  .exp-date-label {
+    font-size: 12px; font-weight: 600; color: var(--text-mid);
+    background: var(--pink-pale); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 14px;
+    align-self: flex-start; margin-bottom: 2px;
+  }
+  .entry-delete-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; padding: 2px 6px; border-radius: 6px;
+    transition: background 0.2s; margin-left: auto;
+    line-height: 1;
+  }
+  .entry-delete-btn:hover { background: #fde8e8; }
+
+  /* ===== QUESTION CATEGORY STYLES ===== */
+  .exp-view { display: flex; flex-direction: column; gap: 14px; }
+
+  /* Sub-tabs inside exp panel */
+  .exp-sub-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .exp-sub-tab {
+    padding: 6px 14px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid var(--border); border-radius: 20px;
+    background: white; color: var(--text-mid); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .exp-sub-tab:hover { border-color: var(--accent-soft); color: var(--accent); }
+  .exp-sub-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Question list */
+  .q-list { display: flex; flex-direction: column; gap: 8px; }
+  .q-item {
+    background: white; border: 1.5px solid var(--border);
+    border-radius: 14px; cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+  }
+  .q-item:hover { border-color: var(--accent-soft); box-shadow: 0 2px 10px rgba(214,51,132,0.1); }
+  .q-item.open { border-color: var(--accent); }
+  .q-item-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px;
+  }
+  .q-item-header .q-text {
+    flex: 1; font-size: 13px; font-weight: 500; color: var(--text);
+  }
+  .q-count {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--surface2); border-radius: 20px;
+    padding: 2px 8px; white-space: nowrap;
+  }
+  .q-arrow {
+    font-size: 11px; color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  .q-item.open .q-arrow { transform: rotate(180deg); }
+  .q-item-delete {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 14px; padding: 2px 6px;
+    border-radius: 6px; transition: color 0.2s, background 0.2s;
+  }
+  .q-item-delete:hover { color: #c0392b; background: #fde8e8; }
+
+  /* Batch tabs inside question */
+  .q-detail { padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .batch-tabs {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    padding: 10px 0 8px;
+  }
+  .batch-tab {
+    padding: 4px 12px; font-size: 11px; font-weight: 600;
+    border: 1.5px solid var(--border); border-radius: 20px;
+    background: white; color: var(--text-mid); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .batch-tab:hover { border-color: var(--accent-soft); }
+  .batch-tab.active { background: var(--pink-pale); color: var(--pink-deep); border-color: var(--pink-mid); }
+  .batch-tab.no-db { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
+
+  .batch-answer {
+    background: var(--surface2); border-radius: 12px;
+    padding: 12px 14px; font-size: 13px; line-height: 1.75;
+    color: var(--text); border: 1px solid var(--border);
+  }
+  .batch-answer-meta {
+    font-size: 10px; color: var(--text-muted);
+    margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+
+  /* Add question row */
+  .add-q-row {
+    display: flex; gap: 8px;
+  }
+  .add-q-row input {
+    flex: 1; background: white; border: 1.5px solid var(--border);
+    border-radius: 12px; color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 9px 14px; outline: none; transition: border-color 0.2s;
+  }
+  .add-q-row input:focus { border-color: var(--accent-soft); }
+  .add-q-row input::placeholder { color: var(--text-muted); }
+  .add-q-btn {
+    background: var(--accent); color: white; border: none;
+    border-radius: 12px; padding: 9px 16px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: opacity 0.2s; white-space: nowrap;
+  }
+  .add-q-btn:hover { opacity: 0.85; }
+
+  #right-panel {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+  #chat-view {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  .api-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px; background: #fff8fb;
+  }
+  .api-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .api-row { display: flex; gap: 8px; align-items: center; }
+  .api-input-wrap { flex: 1; position: relative; }
+  .api-input-wrap input {
+    width: 100%; background: var(--surface2);
+    border: 1.5px solid var(--border); border-radius: 10px;
+    color: var(--text); font-family: monospace; font-size: 12px;
+    padding: 8px 36px 8px 12px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input-wrap input:focus { border-color: var(--accent-soft); }
+  .api-input-wrap input::placeholder { color: var(--text-muted); font-family: 'DM Sans', sans-serif; }
+  .api-eye-btn {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px;
+  }
+  .api-eye-btn:hover { color: var(--accent); }
+  .api-save-btn {
+    background: var(--accent); color: white; border: none;
+    border-radius: 10px; padding: 8px 14px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: opacity 0.2s;
+  }
+  .api-save-btn:hover { opacity: 0.85; }
+  .api-status {
+    font-size: 11px; margin-top: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .api-dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .api-status.ok .api-dot { background: #66bb6a; }
+  .api-status.ok .api-status-text { color: #2e7d32; font-weight: 500; }
+  .api-status.empty .api-status-text { color: var(--text-muted); }
+</style>
 </head>
 <body>
 
+<button id="toggle-btn" onclick="togglePanel()" title="收合/展開資料庫">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6"/></svg>
+</button>
+
 <div id="left-panel">
-    <div class="panel-header">
-        <div class="eyebrow">Data Management</div>
-        <h2>Luna 知識庫訓練</h2>
+  <div class="api-section">
+    <div class="api-label">🔑 Gemini API Key</div>
+    <div class="api-row">
+      <div class="api-input-wrap">
+        <input type="password" id="api-key-input" placeholder="AIzaSy..." />
+        <button class="api-eye-btn" onclick="toggleApiVisibility()" id="eye-btn">👁</button>
+      </div>
+      <button class="api-save-btn" onclick="saveApiKey()">儲存</button>
     </div>
-
-    <div class="api-section">
-        <div class="eyebrow">Gemini API Key</div>
-        <div class="api-row">
-            <div class="api-input-wrap">
-                <input type="password" id="api-key-input" placeholder="AIzaSy...">
-            </div>
-            <button class="btn-save" onclick="saveApiKey()">儲存</button>
-        </div>
-        <div id="api-status" style="font-size: 11px; margin-top: 8px; color: var(--text-muted);">尚未設定 Key</div>
+    <div class="api-status empty" id="api-status">
+      <div class="api-dot"></div>
+      <span class="api-status-text">尚未設定 Gemini API Key</span>
     </div>
+    <button onclick="testApi()" style="margin-top:8px;width:100%;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px;font-size:11px;cursor:pointer;color:#2e7d32;font-weight:600;">🧪 測試 API 連線</button>
+  </div>
 
-    <div class="panel-body">
-        <input type="text" id="batch-name" class="batch-name-input" placeholder="批次名稱（如：月經衛教資料）">
-        <textarea id="knowledge-input" placeholder="在此貼上醫療知識內容..."></textarea>
-        <button class="btn-primary" onclick="addBatch()">＋ 加入資料庫</button>
+  <div class="panel-header">
+    <div class="eyebrow">知識庫管理</div>
+    <h2>訓練 Luna 🌸</h2>
+    <p>分批加入資料，Luna 以中文＋印尼文雙語回應。</p>
+  </div>
 
-        <div class="eyebrow" style="margin-top: 10px;">已載入資料 ( <span id="db-count">0</span> )</div>
-        <div id="training-log"></div>
-        <button class="btn-primary" style="background: #333; margin-top: auto;" onclick="clearBatches()">清除所有資料</button>
+  <div class="panel-body">
+    <div class="batch-label">
+      <input type="text" id="batch-name" placeholder="資料名稱（如：心理機制說明）" maxlength="40"/>
     </div>
+    <textarea id="knowledge-input" placeholder="貼上這批資料內容..."></textarea>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="addBatch()">＋ 加入資料庫</button>
+      <button class="btn-secondary" onclick="clearAll()">清除全部</button>
+    </div>
+    <div id="total-badge" class="total-badge" style="display:none">
+      <span>🗂️</span>
+      <span id="total-text"></span>
+    </div>
+    <div class="section-header">
+      <div class="section-title">訓練資料庫</div>
+      <div class="db-count" id="db-count">0 筆</div>
+    </div>
+    <div id="training-log">
+      <div class="log-empty">尚未加入任何資料</div>
+    </div>
+    <button class="activate-btn" id="activate-btn" onclick="activateLuna()" style="display:none">🌙 啟動 Luna</button>
+  </div>
 </div>
 
 <div id="right-panel">
-    <button id="toggle-btn" onclick="togglePanel()">◀</button>
-    
-    <div id="chat-header">
-        <div class="luna-avatar">🌙</div>
-        <div>
-            <h3 style="font-family: 'Playfair Display', serif;">Luna</h3>
-            <div style="font-size: 12px; color: var(--text-muted);">雙語健康小夥伴 · 中文 / ID / EN</div>
-        </div>
+  <div id="chat-header">
+    <div class="luna-avatar">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="22" r="22" fill="url(#hgrad)"/>
+        <defs><radialGradient id="hgrad" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffd6e8"/><stop offset="100%" stop-color="#e8779a"/></radialGradient></defs>
+        <ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/><ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/>
+        <circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/><circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
+        <path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      </svg>
     </div>
+    <div class="header-info">
+      <h3>Luna</h3>
+      <div class="subtitle">Sahabat Kesehatan · 健康小夥伴</div>
+    </div>
+    <div class="lang-badge">
+      <div class="online-dot"></div>
+      <span id="online-label">中文 · Bahasa Indonesia</span>
+    </div>
+  </div>
 
-    <div class="tab-bar">
-        <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">對話測試</button>
-        <button class="tab-btn" id="tab-exp" onclick="switchTab('exp')">實驗記錄</button>
-    </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">💬 對話</button>
+    <button class="tab-btn" id="tab-exp" onclick="switchTab('exp')">🔬 實驗記錄</button>
+  </div>
 
-    <!-- 聊天畫面 -->
-    <div id="chat-container" style="display: flex; flex-direction: column; flex: 1;">
-        <div id="messages"></div>
-        <div id="input-area">
-            <textarea id="user-input" rows="1" placeholder="問問 Luna..." onkeydown="handleEnter(event)"></textarea>
-            <button id="send-btn" onclick="sendMessage()">➤</button>
-        </div>
+  <div id="chat-view">
+    <div id="messages"></div>
+    <div id="input-area">
+      <textarea id="user-input" rows="1" placeholder="用中文、印尼文或英文和 Luna 說話..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
     </div>
+  </div>
 
-    <!-- 記錄畫面 -->
-    <div id="exp-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <h2 style="font-family: 'Playfair Display', serif;">實驗記錄對照</h2>
-            <button class="btn-save" onclick="exportCSV()">匯出 CSV</button>
-        </div>
-        <div id="exp-list"></div>
+  <div id="exp-panel">
+    <div class="exp-header-row">
+      <div>
+        <div class="exp-title">實驗對照記錄</div>
+        <div class="exp-subtitle">依問題分類查看回答差異</div>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="export-btn" onclick="exportLog()">⬇ 匯出 CSV</button>
+        <button class="export-btn" onclick="clearAllLog()" style="background:#e57373;">🗑 清除全部</button>
+      </div>
     </div>
+    <div class="exp-stats">
+      <div class="stat-card"><div class="stat-label">總對話數</div><div class="stat-value" id="stat-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">無資料庫</div><div class="stat-value" id="stat-nodb" style="color:#e65100">0</div></div>
+      <div class="stat-card"><div class="stat-label">有資料庫</div><div class="stat-value" id="stat-withdb" style="color:#2e7d32">0</div></div>
+    </div>
+    <div class="exp-sub-tabs">
+      <button class="exp-sub-tab active" id="subtab-q" onclick="switchExpView('q')">📋 依問題分類</button>
+      <button class="exp-sub-tab" id="subtab-time" onclick="switchExpView('time')">🕐 依時間排序</button>
+    </div>
+    <div id="exp-view-q" class="exp-view">
+      <div class="add-q-row">
+        <input type="text" id="new-q-input" placeholder="新增問題範例..." maxlength="60"/>
+        <button class="add-q-btn" onclick="addQuestion()">＋ 新增</button>
+      </div>
+      <div class="q-list" id="q-list"></div>
+    </div>
+    <div id="exp-view-time" class="exp-view" style="display:none"><div id="exp-entries"></div></div>
+  </div>
 </div>
 
 <script>
-    // --- 核心變數 ---
-    // 使用 gemini-1.5-flash 以確保最廣泛的相容性
-    const modelName = "gemini-1.5-flash";
-    let apiKey = localStorage.getItem('luna_api_key') || '';
-    let batches = JSON.parse(localStorage.getItem('luna_batches') || '[]');
-    let expLogs = JSON.parse(localStorage.getItem('luna_exp_logs') || '[]');
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
+  };
 
-    // --- 初始化 ---
-    window.onload = () => {
-        if (apiKey) {
-            document.getElementById('api-key-input').value = '********' + apiKey.slice(-4);
-            document.getElementById('api-status').innerHTML = '✅ API Key 已就緒';
-        }
-        renderBatches();
-        renderExpLogs();
-        addBotMessage("Selamat datang! 🌙 你好，我是 Luna。你可以隨時問我關於婦科健康的問題。");
-    };
+  let batches = JSON.parse(store.get('luna_batches') || '[]');
+  let apiKey = store.get('luna_apiKey') || '';
+  let expLog = JSON.parse(store.get('luna_expLog') || '[]');
+  let questions = JSON.parse(store.get('luna_questions') || '["月經不規律嗎？", "白帶變多？"]');
+  let history = [];
+  let isLoading = false;
+  let batchCounter = parseInt(store.get('luna_batchCounter') || '0');
+  let openQuestion = null;
+  let activeQBatchIdx = {};
 
-    // --- UI 控制 ---
-    function togglePanel() {
-        const panel = document.getElementById('left-panel');
-        const btn = document.getElementById('toggle-btn');
-        panel.classList.toggle('collapsed');
-        btn.innerHTML = panel.classList.contains('collapsed') ? '▶' : '◀';
+  // Gemini Model Config
+  const GEMINI_MODEL = "gemini-1.5-flash"; // 修正為正確的 1.5 版本
+
+  function saveApiKey() {
+    const val = document.getElementById('api-key-input').value.trim();
+    if (!val) return;
+    apiKey = val;
+    store.set('luna_apiKey', val);
+    updateApiStatus();
+  }
+
+  function updateApiStatus() {
+    const status = document.getElementById('api-status');
+    if (apiKey) {
+      status.className = 'api-status ok';
+      status.querySelector('.api-status-text').textContent = '✓ Gemini API Key 已設定';
+      document.getElementById('api-key-input').value = apiKey.slice(0,8) + '••••••••';
     }
+  }
 
-    function switchTab(tab) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + tab).classList.add('active');
-        document.getElementById('chat-container').style.display = tab === 'chat' ? 'flex' : 'none';
-        document.getElementById('exp-panel').style.display = tab === 'exp' ? 'block' : 'none';
-        if (tab === 'exp') renderExpLogs();
+  async function testApi() {
+    if (!apiKey) { alert('請先輸入 API Key！'); return; }
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 'hi' }] }] })
+      });
+      const data = await res.json();
+      if (data.error) alert('API 錯誤：' + data.error.message);
+      else alert('✅ API 連線成功！');
+    } catch(e) { alert('連線錯誤：' + e.message); }
+  }
+
+  function togglePanel() {
+    const panel = document.getElementById('left-panel');
+    const btn = document.getElementById('toggle-btn');
+    const isCollapsed = panel.classList.toggle('collapsed');
+    btn.classList.toggle('collapsed-btn', isCollapsed);
+  }
+
+  function switchTab(tab) {
+    document.getElementById('chat-view').style.display = tab === 'chat' ? 'flex' : 'none';
+    document.getElementById('exp-panel').style.display = tab === 'exp' ? 'flex' : 'none';
+    if (tab === 'exp') { renderQList(); updateExpStats(); }
+  }
+
+  async function sendMessage() {
+    if (isLoading || !apiKey) return;
+    const input = document.getElementById('user-input');
+    const q = input.value.trim();
+    if (!q) return;
+
+    input.value = '';
+    isLoading = true;
+    addUserMsg(q);
+    showTyping();
+
+    const knowledgeText = batches.map(b => `【${b.name}】\n${b.text}`).join('\n\n');
+    const systemPrompt = `你是 Luna，雙語健康助手。請用 [中文]|||[印尼文] 格式回答。醫學問題僅限參考以下知識庫：\n${knowledgeText || "目前無資料庫，請告知使用者暫無資料。"}`;
+
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: q }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
+        })
+      });
+      const data = await res.json();
+      removeTyping();
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || "抱歉，我現在無法回答。";
+      const [zh, id] = raw.split('|||');
+      addBotBilingual(zh || raw, id || "");
+      logEntry(q, zh || raw, batches.length > 0, batches.map(b => b.name));
+    } catch (e) {
+      removeTyping();
+      addBotBilingual("連線失敗，請檢查 API Key。", "");
     }
+    isLoading = false;
+  }
 
-    // --- API 管理 ---
-    function saveApiKey() {
-        const val = document.getElementById('api-key-input').value.trim();
-        if (val.startsWith('AIza')) {
-            apiKey = val;
-            localStorage.setItem('luna_api_key', val);
-            alert('API Key 已儲存！');
-            location.reload();
-        } else {
-            alert('請輸入正確的 Gemini API Key (以 AIza 開頭)');
-        }
-    }
+  // UI Helpers
+  function addUserMsg(t) {
+    const m = document.getElementById('messages');
+    m.innerHTML += `<div class="message user"><div class="bubble">${escHtml(t)}</div></div>`;
+    m.scrollTop = m.scrollHeight;
+  }
 
-    // --- 知識庫管理 ---
-    function addBatch() {
-        const nameInput = document.getElementById('batch-name');
-        const contentInput = document.getElementById('knowledge-input');
-        if (!contentInput.value.trim()) return;
+  function addBotBilingual(zh, id) {
+    const m = document.getElementById('messages');
+    m.innerHTML += `<div class="message bot"><div class="bubble"><div>${escHtml(zh)}</div>${id ? `<hr style="margin:8px 0;opacity:0.2"><div>${escHtml(id)}</div>` : ''}</div></div>`;
+    m.scrollTop = m.scrollHeight;
+  }
 
-        const newBatch = {
-            id: Date.now(),
-            name: nameInput.value || `批次 ${batches.length + 1}`,
-            content: contentInput.value.trim()
-        };
-        batches.push(newBatch);
-        localStorage.setItem('luna_batches', JSON.stringify(batches));
-        nameInput.value = '';
-        contentInput.value = '';
-        renderBatches();
-    }
+  function showTyping() {
+    const m = document.getElementById('messages');
+    m.innerHTML += `<div class="message bot" id="typing-msg"><div class="bubble">Typing...</div></div>`;
+    m.scrollTop = m.scrollHeight;
+  }
 
-    function renderBatches() {
-        const list = document.getElementById('training-log');
-        const count = document.getElementById('db-count');
-        list.innerHTML = '';
-        batches.forEach(b => {
-            const div = document.createElement('div');
-            div.className = 'log-item';
-            div.innerHTML = `<span>${b.name} (${b.content.length}字)</span><button class="log-delete" onclick="deleteBatch(${b.id})">×</button>`;
-            list.appendChild(div);
-        });
-        count.innerText = batches.length;
-    }
+  function removeTyping() { const e = document.getElementById('typing-msg'); if(e) e.remove(); }
 
-    function deleteBatch(id) {
-        batches = batches.filter(b => b.id !== id);
-        localStorage.setItem('luna_batches', JSON.stringify(batches));
-        renderBatches();
-    }
+  function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
 
-    function clearBatches() {
-        if (confirm('確定要清除所有訓練資料嗎？')) {
-            batches = [];
-            localStorage.removeItem('luna_batches');
-            renderBatches();
-        }
-    }
+  function addBatch() {
+    const t = document.getElementById('knowledge-input').value.trim();
+    const n = document.getElementById('batch-name').value.trim() || `資料 ${++batchCounter}`;
+    if(!t) return;
+    batches.push({ name: n, text: t, chars: t.length });
+    store.set('luna_batches', JSON.stringify(batches));
+    renderLog();
+    document.getElementById('knowledge-input').value = '';
+  }
 
-    // --- 對話邏輯 ---
-    async function sendMessage() {
-        const input = document.getElementById('user-input');
-        const text = input.value.trim();
-        if (!text || !apiKey) {
-            if (!apiKey) alert('請先設定 API Key');
-            return;
-        }
+  function renderLog() {
+    const log = document.getElementById('training-log');
+    log.innerHTML = batches.map(b => `<div class="log-item"><span>${b.name} (${b.chars}字)</span></div>`).join('');
+    document.getElementById('activate-btn').style.display = batches.length ? 'block' : 'none';
+    document.getElementById('db-count').textContent = batches.length + ' 筆';
+  }
 
-        addUserMessage(text);
-        input.value = '';
-        input.style.height = 'auto';
+  function logEntry(q, a, db, names) {
+    expLog.push({ question: q, zhAnswer: a, hasDB: db, batchNames: names, date: new Date().toLocaleDateString() });
+    store.set('luna_expLog', JSON.stringify(expLog));
+  }
 
-        const typingId = showTyping();
+  function updateExpStats() {
+    document.getElementById('stat-total').textContent = expLog.length;
+    document.getElementById('stat-nodb').textContent = expLog.filter(e => !e.hasDB).length;
+    document.getElementById('stat-withdb').textContent = expLog.filter(e => e.hasDB).length;
+  }
 
-        // 構建 Prompt
-        const knowledgeBase = batches.map(b => `[${b.name}]: ${b.content}`).join('\n\n');
-        const systemPrompt = `
-你是 Luna，一位溫柔且專業的婦科健康 AI 助手。
-任務：
-1. 根據「知識庫內容」回答問題。如果知識庫沒有相關內容，請回答「這個問題我目前的資料庫裡還沒有相關資訊，建議你諮詢專業醫師哦 🌸」。
-2. 回答必須包含兩部分：繁體中文與印尼文 (Bahasa Indonesia)。
-3. 使用分隔符 "|||" 分開兩種語言。
-4. 在每個回答末尾加上醫療免責聲明。
+  function handleKey(e) { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+  function autoResize(e) { e.style.height = 'auto'; e.style.height = e.scrollHeight + 'px'; }
 
-知識庫內容：
-${knowledgeBase || "目前無資料庫內容。"}
-        `;
-
-        try {
-            // 使用 v1beta 介面，支援大多數現有的 Gemini 帳號
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [{ text: systemPrompt + "\n\n使用者問題: " + text }]
-                        }
-                    ],
-                    generationConfig: {
-                        temperature: 0.7,
-                        maxOutputTokens: 1000,
-                    }
-                })
-            });
-
-            const data = await response.json();
-            removeTyping(typingId);
-
-            if (data.error) {
-                throw new Error(data.error.message || "API 調用發生錯誤");
-            }
-
-            if (data.candidates && data.candidates[0].content) {
-                const fullText = data.candidates[0].content.parts[0].text;
-                const parts = fullText.split('|||');
-                const zh = parts[0] ? parts[0].trim() : "抱歉，我無法正常生成回答。";
-                const id = parts[1] ? parts[1].trim() : "";
-                addBotMessage(zh, id);
-                saveLog(text, zh, batches.length > 0);
-            } else {
-                addBotMessage("發生未預期的錯誤，請檢查您的 API Key 額度或連線狀態。");
-            }
-        } catch (err) {
-            removeTyping(typingId);
-            addBotMessage("系統錯誤: " + err.message);
-            console.error(err);
-        }
-    }
-
-    function addUserMessage(text) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message user';
-        msgDiv.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
-        document.getElementById('messages').appendChild(msgDiv);
-        scrollToBottom();
-    }
-
-    function addBotMessage(zh, id = "") {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message bot';
-        let content = `<div class="bubble"><div>${escapeHtml(zh).replace(/\n/g, '<br>')}</div>`;
-        if (id) {
-            content += `<div class="lang-divider">Bahasa Indonesia</div><div>${escapeHtml(id).replace(/\n/g, '<br>')}</div>`;
-        }
-        content += `</div>`;
-        msgDiv.innerHTML = content;
-        document.getElementById('messages').appendChild(msgDiv);
-        scrollToBottom();
-    }
-
-    function showTyping() {
-        const id = 't-' + Date.now();
-        const div = document.createElement('div');
-        div.id = id;
-        div.className = 'message bot';
-        div.innerHTML = `<div class="bubble"><div class="typing"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>`;
-        document.getElementById('messages').appendChild(div);
-        scrollToBottom();
-        return id;
-    }
-
-    function removeTyping(id) {
-        const el = document.getElementById(id);
-        if (el) el.remove();
-    }
-
-    // --- 實驗記錄邏輯 ---
-    function saveLog(q, a, hasDB) {
-        const log = {
-            id: Date.now(),
-            time: new Date().toLocaleString(),
-            question: q,
-            answer: a,
-            hasDB: hasDB,
-            batchCount: batches.length
-        };
-        expLogs.unshift(log);
-        localStorage.setItem('luna_exp_logs', JSON.stringify(expLogs));
-    }
-
-    function renderExpLogs() {
-        const list = document.getElementById('exp-list');
-        list.innerHTML = expLogs.length ? '' : '<p style="text-align:center; color:#999; padding: 20px;">尚無記錄</p>';
-        expLogs.forEach(log => {
-            const div = document.createElement('div');
-            div.className = 'exp-card';
-            div.innerHTML = `
-                <span class="exp-tag ${log.hasDB ? 'tag-db' : 'tag-nodb'}">${log.hasDB ? '實驗組 (有資料庫)' : '對照組 (無資料庫)'}</span>
-                <div style="font-size: 11px; color: #999; margin-bottom: 8px;">${log.time} | 載入批次: ${log.batchCount}</div>
-                <p><strong>問：</strong> ${escapeHtml(log.question)}</p>
-                <p style="margin-top:10px; color:#555; border-top: 1px dashed #eee; padding-top: 10px;"><strong>答：</strong> ${escapeHtml(log.answer).substring(0, 200)}...</p>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    function exportCSV() {
-        if (!expLogs.length) {
-            alert('沒有資料可匯出');
-            return;
-        }
-        let csvContent = "\uFEFF時間,組別,批次數,問題,回答\n";
-        expLogs.forEach(log => {
-            const group = log.hasDB ? "實驗組" : "對照組";
-            const row = [log.time, group, log.batchCount, log.question, log.answer].map(s => `"${String(s).replace(/"/g, '""')}"`).join(",");
-            csvContent += row + "\n";
-        });
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Luna_Experiment_Log_${Date.now()}.csv`);
-        link.click();
-    }
-
-    // --- 工具函式 ---
-    function handleEnter(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-    function scrollToBottom() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
-    function escapeHtml(text) { 
-        if (!text) return "";
-        const p = document.createElement('p'); 
-        p.textContent = text; 
-        return p.innerHTML; 
-    }
+  // Init
+  updateApiStatus();
+  renderLog();
 </script>
 </body>
 </html>
