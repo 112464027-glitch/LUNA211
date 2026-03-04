@@ -650,17 +650,17 @@
 <div id="left-panel">
   <!-- API Key Section -->
   <div class="api-section">
-    <div class="api-label">🔑 Claude API Key</div>
+    <div class="api-label">🔑 Gemini API Key</div>
     <div class="api-row">
       <div class="api-input-wrap">
-        <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+        <input type="password" id="api-key-input" placeholder="AIzaSy..." />
         <button class="api-eye-btn" onclick="toggleApiVisibility()" id="eye-btn">👁</button>
       </div>
       <button class="api-save-btn" onclick="saveApiKey()">儲存</button>
     </div>
     <div class="api-status empty" id="api-status">
       <div class="api-dot"></div>
-      <span class="api-status-text">尚未設定 Claude API Key</span>
+      <span class="api-status-text">尚未設定 Gemini API Key</span>
     </div>
     <button onclick="testApi()" style="margin-top:8px;width:100%;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px;font-size:11px;cursor:pointer;color:#2e7d32;font-weight:600;">🧪 測試 API 連線</button>
   </div>
@@ -1132,7 +1132,7 @@
     store.set('luna_apiKey', val);
     const status = document.getElementById('api-status');
     status.className = 'api-status ok';
-    status.querySelector('.api-status-text').textContent = '✓ Claude API Key 已設定';
+    status.querySelector('.api-status-text').textContent = '✓ Gemini API Key 已設定';
     document.getElementById('api-key-input').value = val.slice(0,12) + '••••••••••••';
   }
 
@@ -1141,29 +1141,26 @@
     document.getElementById('api-key-input').value = apiKey.slice(0,12) + '••••••••••••';
     const s = document.getElementById('api-status');
     s.className = 'api-status ok';
-    s.querySelector('.api-status-text').textContent = '✓ Claude API Key 已設定';
+    s.querySelector('.api-status-text').textContent = '✓ Gemini API Key 已設定';
   }
 
   async function testApi() {
     if (!apiKey) { alert('請先輸入 API Key！'); return; }
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 50,
-          messages: [{ role: 'user', content: 'hi' }]
-        })
-      });
+      const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ role: 'user', parts: [{ text: 'hi' }] }]
+          })
+        }
+      );
       const data = await res.json();
       if (data.error) alert('API 錯誤：' + data.error.message);
-      else alert('✅ API 正常！回應：' + data.content?.[0]?.text);
+      else alert('✅ API 正常！回應：' + data.candidates?.[0]?.content?.parts?.[0]?.text);
     } catch(e) {
       alert('連線錯誤：' + e.message);
     }
@@ -1316,25 +1313,41 @@
 ${knowledgeSection}`;
 
     try {
-      const headers = { 'Content-Type': 'application/json' };
-      if (apiKey) {
-        headers['x-api-key'] = apiKey;
-        headers['anthropic-version'] = '2023-06-01';
-        headers['anthropic-dangerous-direct-browser-access'] = 'true';
+      const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
+      if (!cleanKey) {
+        removeTyping();
+        addBotBilingual(
+          '請先在左側設定 Gemini API Key，才能開始對話哦 🔑',
+          'Mohon masukkan Gemini API Key di panel kiri terlebih dahulu ya 🔑'
+        );
+        isLoading = false;
+        document.getElementById('send-btn').disabled = false;
+        return;
       }
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1500,
-          system,
-          messages: history
-        })
-      });
+
+      // Build Gemini history - must start with user
+      const geminiContents = [];
+      for (const m of history) {
+        const role = m.role === 'assistant' ? 'model' : 'user';
+        if (geminiContents.length === 0 && role === 'model') continue;
+        geminiContents.push({ role, parts: [{ text: m.content }] });
+      }
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: system }] },
+            contents: geminiContents,
+            generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
+          })
+        }
+      );
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      const raw = data.content?.map(b => b.text || '').join('') || '很抱歉，發生了問題。|||Maaf, ada masalah teknis.';
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '很抱歉，發生了問題。|||Maaf, ada masalah teknis.';
       removeTyping();
       const sepIdx = raw.indexOf('|||');
       const zhPart = (sepIdx >= 0 ? raw.slice(0, sepIdx) : raw).trim();
