@@ -1301,11 +1301,19 @@ ${knowledgeSection}`;
         return;
       }
 
-      // Build Gemini message history
-      const geminiHistory = history.slice(0, -1).map(m => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }]
-      }));
+      // Build Gemini message history - must start with user role
+      const allHistory = [...history.slice(0, -1), { role: 'user', content: q }];
+      const geminiContents = [];
+      for (const m of allHistory) {
+        const role = m.role === 'assistant' ? 'model' : 'user';
+        // Skip leading model messages (Gemini requires user first)
+        if (geminiContents.length === 0 && role === 'model') continue;
+        geminiContents.push({ role, parts: [{ text: m.content }] });
+      }
+      // Ensure last message is the current user question
+      if (!geminiContents.length || geminiContents[geminiContents.length-1].role !== 'user') {
+        geminiContents.push({ role: 'user', parts: [{ text: q }] });
+      }
 
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
@@ -1314,10 +1322,7 @@ ${knowledgeSection}`;
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             system_instruction: { parts: [{ text: system }] },
-            contents: [
-              ...geminiHistory,
-              { role: 'user', parts: [{ text: q }] }
-            ],
+            contents: geminiContents,
             generationConfig: { maxOutputTokens: 1500, temperature: 0.7 }
           })
         }
