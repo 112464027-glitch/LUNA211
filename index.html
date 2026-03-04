@@ -1308,7 +1308,7 @@ ${knowledgeSection}`;
       }));
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1324,8 +1324,7 @@ ${knowledgeSection}`;
       );
       const data = await res.json();
       if (data.error) throw new Error(data.error.message);
-      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '很抱歉，發生了問題。|||Maaf, ada masalah teknis.';
-      removeTyping();
+      const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '很抱歉，發生了問題。|||Maaf, ada masalah teknis.';      removeTyping();
       const sepIdx = raw.indexOf('|||');
       const zhPart = (sepIdx >= 0 ? raw.slice(0, sepIdx) : raw).trim();
       const idPart = (sepIdx >= 0 ? raw.slice(sepIdx + 3) : '').trim();
@@ -1335,8 +1334,8 @@ ${knowledgeSection}`;
     } catch (e) {
       removeTyping();
       addBotBilingual(
-        'Aduh~ 發生了技術問題，請稍後再試一次 🙏',
-        'Aduh~ Ada masalah teknis. Coba lagi nanti ya 🙏'
+        `Aduh~ 發生了技術問題：${e.message || '請檢查 API Key 是否正確'} 🙏`,
+        `Aduh~ Ada masalah teknis: ${e.message || 'Periksa API Key kamu ya'} 🙏`
       );
       console.error(e);
     }
