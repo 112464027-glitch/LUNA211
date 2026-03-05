@@ -5,21 +5,26 @@ async function kvGet(key) {
     headers: { Authorization: `Bearer ${token}` }
   });
   const data = await res.json();
-  if (!data.result) return null;
-  try {
-    return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
-  } catch(e) { return null; }
+  if (!data.result) return [];
+  let parsed = data.result;
+  // Upstash may double-encode
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+  }
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+  }
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 async function kvSet(key, value) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
+  await fetch(`${url}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(JSON.stringify(value))
   });
-  return res.json();
 }
 
 module.exports = async (req, res) => {
@@ -30,20 +35,20 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const batches = await kvGet('luna_batches') || [];
+      const batches = await kvGet('luna_batches');
       return res.status(200).json({ batches });
     }
     if (req.method === 'POST') {
       const { name, text } = req.body;
       if (!text) return res.status(400).json({ error: '缺少內容' });
-      const batches = await kvGet('luna_batches') || [];
+      const batches = await kvGet('luna_batches');
       batches.push({ id: 'b_' + Date.now(), name: name || `資料 ${batches.length + 1}`, text, chars: text.length });
       await kvSet('luna_batches', batches);
       return res.status(200).json({ batches });
     }
     if (req.method === 'DELETE') {
       const { id } = req.body;
-      let batches = id === 'all' ? [] : (await kvGet('luna_batches') || []).filter(b => b.id !== id);
+      let batches = id === 'all' ? [] : (await kvGet('luna_batches')).filter(b => b.id !== id);
       await kvSet('luna_batches', batches);
       return res.status(200).json({ batches });
     }
