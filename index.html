@@ -877,7 +877,7 @@
 
   // ===== EXPERIMENT LOG =====
   let expLog = JSON.parse(store.get('luna_expLog') || '[]');
-  let apiKey = 'AIzaSyA904_jGdCowk0ITM8Gde17bAoM9O8cLVM';
+  let apiKey = 'AIzaSyAOEAtQDKEIOijrrpqZqpyxAgaXyf9Udt0';
 
   // Default preset questions
   const DEFAULT_QUESTIONS = [
@@ -1108,52 +1108,6 @@
   updateExpStats();
 
 
-
-  function saveApiKey() {
-    const val = document.getElementById('api-key-input').value.trim();
-    if (!val) { alert('請輸入 API Key！'); return; }
-    apiKey = val;
-    store.set('luna_apiKey', val);
-    const status = document.getElementById('api-status');
-    status.className = 'api-status ok';
-    status.querySelector('.api-status-text').textContent = '✓ Gemini API Key 已設定';
-    document.getElementById('api-key-input').value = val.slice(0,12) + '••••••••••••';
-  }
-
-  // Restore saved API key on load
-  if (apiKey) {
-    document.getElementById('api-key-input').value = apiKey.slice(0,12) + '••••••••••••';
-    const s = document.getElementById('api-status');
-    s.className = 'api-status ok';
-    s.querySelector('.api-status-text').textContent = '✓ Gemini API Key 已設定';
-  }
-
-  async function testApi() {
-    if (!apiKey) { alert('請先輸入 API Key！'); return; }
-    try {
-      const cleanKey = apiKey.replace(/[^\x20-\x7E]/g, '').trim();
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${cleanKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ role: 'user', parts: [{ text: 'hi' }] }]
-          })
-        }
-      );
-      const data = await res.json();
-      if (data.error) alert('API 錯誤：' + data.error.message);
-      else alert('✅ API 正常！回應：' + data.candidates?.[0]?.content?.parts?.[0]?.text);
-    } catch(e) {
-      alert('連線錯誤：' + e.message);
-    }
-  }
-
-  function toggleApiVisibility() {
-    const input = document.getElementById('api-key-input');
-    input.type = input.type === 'password' ? 'text' : 'password';
-  }
 
   function togglePanel() {
     const panel = document.getElementById('left-panel');
