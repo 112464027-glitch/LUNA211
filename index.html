@@ -1218,7 +1218,7 @@
           <div class="log-num">${i+1}</div>
           <div>
             <div class="log-name">${escHtml(b.name)}</div>
-            <div class="log-chars">${b.chars.toLocaleString()} 字元</div>
+            <div class="log-chars">${(b.chars || 0).toLocaleString()} 字元</div>
           </div>
         </div>
         <button class="log-delete" onclick="deleteBatch('${b.id}')" title="刪除">×</button>
