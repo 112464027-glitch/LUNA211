@@ -1179,7 +1179,7 @@
         body: JSON.stringify({ id })
       });
       const data = await res.json();
-      batches = data.batches || [];
+      batches = Array.isArray(data.batches) ? data.batches : [];
       renderLog(); updateTotal();
       if (!batches.length) {
         document.getElementById('activate-btn').style.display = 'none';
@@ -1228,7 +1228,7 @@
   }
 
   function updateTotal() {
-    const total = batches.reduce((s, b) => s + b.chars, 0);
+    const total = (batches || []).reduce((s, b) => s + (b.chars || 0), 0);
     const badge = document.getElementById('total-badge');
     if (total > 0) {
       badge.style.display = 'flex';
