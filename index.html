@@ -648,22 +648,6 @@
 </button>
 
 <div id="left-panel">
-  <!-- API Key Section -->
-  <div class="api-section">
-    <div class="api-label">🔑 Gemini API Key</div>
-    <div class="api-row">
-      <div class="api-input-wrap">
-        <input type="password" id="api-key-input" placeholder="AIzaSy..." />
-        <button class="api-eye-btn" onclick="toggleApiVisibility()" id="eye-btn">👁</button>
-      </div>
-      <button class="api-save-btn" onclick="saveApiKey()">儲存</button>
-    </div>
-    <div class="api-status empty" id="api-status">
-      <div class="api-dot"></div>
-      <span class="api-status-text">尚未設定 Gemini API Key</span>
-    </div>
-    <button onclick="testApi()" style="margin-top:8px;width:100%;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:6px;font-size:11px;cursor:pointer;color:#2e7d32;font-weight:600;">🧪 測試 API 連線</button>
-  </div>
 
   <div class="panel-header">
     <div class="eyebrow">知識庫管理</div>
@@ -893,7 +877,7 @@
 
   // ===== EXPERIMENT LOG =====
   let expLog = JSON.parse(store.get('luna_expLog') || '[]');
-  let apiKey = store.get('luna_apiKey') || '';
+  let apiKey = 'AIzaSyAOEAtQDKEIOijrrpqZqpyxAgaXyf9Udt0';
 
   // Default preset questions
   const DEFAULT_QUESTIONS = [
