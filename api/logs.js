@@ -1,4 +1,22 @@
-const { kv } = require('@vercel/kv');
+async function kvGet(key) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const res = await fetch(`${url}/get/${key}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  return data.result ? JSON.parse(data.result) : null;
+}
+
+async function kvSet(key, value) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  await fetch(`${url}/set/${key}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(JSON.stringify(value))
+  });
+}
 
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,22 +26,15 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const logs = await kv.get('luna_expLog') || [];
+      const logs = await kvGet('luna_expLog') || [];
       return res.status(200).json({ logs });
     }
-
     if (req.method === 'DELETE') {
       const { id } = req.body;
-      if (id === 'all') {
-        await kv.set('luna_expLog', []);
-        return res.status(200).json({ logs: [] });
-      }
-      let logs = await kv.get('luna_expLog') || [];
-      logs = logs.filter(e => String(e.id) !== String(id));
-      await kv.set('luna_expLog', logs);
+      let logs = id === 'all' ? [] : (await kvGet('luna_expLog') || []).filter(e => String(e.id) !== String(id));
+      await kvSet('luna_expLog', logs);
       return res.status(200).json({ logs });
     }
-
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
     console.error(err);
