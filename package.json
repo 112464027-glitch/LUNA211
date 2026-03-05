@@ -2,7 +2,6 @@
   "name": "luna-chatbot",
   "version": "1.0.0",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
-    "@vercel/kv": "^2.0.0"
+    "@google/generative-ai": "^0.21.0"
   }
 }
