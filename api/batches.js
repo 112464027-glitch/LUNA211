@@ -1,30 +1,33 @@
 async function kvGet(key) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  if (!data.result) return [];
-  let parsed = data.result;
-  // Upstash may double-encode
-  if (typeof parsed === 'string') {
-    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+  try {
+    const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (!data.result) return [];
+    let parsed = data.result;
+    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+    return Array.isArray(parsed) ? parsed : [];
+  } catch(e) {
+    console.error('kvGet error:', e);
+    return [];
   }
-  if (typeof parsed === 'string') {
-    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
-  }
-  return Array.isArray(parsed) ? parsed : [];
 }
 
 async function kvSet(key, value) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  await fetch(`${url}/set/${encodeURIComponent(key)}`, {
+  const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(JSON.stringify(value))
   });
+  const text = await res.text();
+  console.log('kvSet response:', text);
 }
 
 module.exports = async (req, res) => {
@@ -54,7 +57,7 @@ module.exports = async (req, res) => {
     }
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error(err);
+    console.error('batches error:', err);
     res.status(500).json({ error: err.message });
   }
 };
