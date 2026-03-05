@@ -1,40 +1,31 @@
 async function kvGet(key) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  if (!data.result) return [];
-  let parsed = data.result;
-  if (typeof parsed === 'string') {
-    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
-  }
-  if (typeof parsed === 'string') {
-    try { parsed = JSON.parse(parsed); } catch(e) { return []; }
-  }
-  return Array.isArray(parsed) ? parsed : [];
-}/get/${key}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  if (!data.result) return null;
   try {
-    return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+    const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const text = await res.text();
+    const data = JSON.parse(text);
+    if (!data.result) return [];
+    let parsed = data.result;
+    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
+    return Array.isArray(parsed) ? parsed : [];
   } catch(e) {
-    return null;
+    console.error('kvGet error:', e.message);
+    return [];
   }
 }
 
 async function kvSet(key, value) {
   const url = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
+  await fetch(`${url}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(JSON.stringify(value))
   });
-  return res.json();
 }
 
 module.exports = async (req, res) => {
@@ -45,18 +36,18 @@ module.exports = async (req, res) => {
 
   try {
     if (req.method === 'GET') {
-      const logs = await kvGet('luna_expLog') || [];
+      const logs = await kvGet('luna_expLog');
       return res.status(200).json({ logs });
     }
     if (req.method === 'DELETE') {
       const { id } = req.body;
-      let logs = id === 'all' ? [] : (await kvGet('luna_expLog') || []).filter(e => String(e.id) !== String(id));
+      let logs = id === 'all' ? [] : (await kvGet('luna_expLog')).filter(e => String(e.id) !== String(id));
       await kvSet('luna_expLog', logs);
       return res.status(200).json({ logs });
     }
     res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error(err);
+    console.error('logs error:', err);
     res.status(500).json({ error: err.message });
   }
 };
