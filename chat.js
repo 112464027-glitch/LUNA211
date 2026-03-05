@@ -1,5 +1,4 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { kv } = require('@vercel/kv');
 
 const SYSTEM_INSTRUCTION = `你是 Luna，一個溫暖、有印尼文化共感的女性健康 AI 夥伴，專注於婦科與女性生殖健康議題。
 
@@ -22,6 +21,26 @@ const SYSTEM_INSTRUCTION = `你是 Luna，一個溫暖、有印尼文化共感�
 中文版：「⚠️ 以上資訊僅供參考，不構成醫療診斷或建議。如有身體不適，請務必諮詢專業醫師。」
 印尼文版：「⚠️ Informasi di atas hanya untuk referensi dan bukan merupakan diagnosis atau saran medis. Jika kamu merasa tidak nyaman, segera konsultasikan dengan dokter.」`;
 
+async function kvGet(key) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const res = await fetch(`${url}/get/${key}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  return data.result ? JSON.parse(data.result) : null;
+}
+
+async function kvSet(key, value) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  await fetch(`${url}/set/${key}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(JSON.stringify(value))
+  });
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -33,7 +52,7 @@ module.exports = async (req, res) => {
     const { prompt, history } = req.body;
     if (!prompt) return res.status(400).json({ error: '缺少 prompt' });
 
-    const batches = await kv.get('luna_batches') || [];
+    const batches = await kvGet('luna_batches') || [];
     const knowledgeText = batches.map((b, i) => `【資料 ${i+1}：${b.name}】\n${b.text}`).join('\n\n---\n\n');
 
     const systemWithKB = knowledgeText
@@ -51,8 +70,7 @@ module.exports = async (req, res) => {
     const result = await chat.sendMessage(prompt);
     const text = result.response.text();
 
-    // Save to experiment log
-    const logs = await kv.get('luna_expLog') || [];
+    const logs = await kvGet('luna_expLog') || [];
     const now = new Date();
     logs.push({
       id: Date.now(),
@@ -64,7 +82,7 @@ module.exports = async (req, res) => {
       batchNames: batches.map(b => b.name)
     });
     if (logs.length > 500) logs.splice(0, logs.length - 500);
-    await kv.set('luna_expLog', logs);
+    await kvSet('luna_expLog', logs);
 
     res.status(200).json({ text });
   } catch (err) {
