@@ -1,6 +1,6 @@
 async function kvGet(key) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
   const res = await fetch(`${url}/get/${key}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
@@ -14,8 +14,8 @@ async function kvGet(key) {
 }
 
 async function kvSet(key, value) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
   const serialized = JSON.stringify(value);
   await fetch(`${url}/set/${key}`, {
     method: 'POST',
