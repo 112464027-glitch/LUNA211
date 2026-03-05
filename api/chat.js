@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
       : SYSTEM_INSTRUCTION + '\n\n## 知識庫狀態：空白\n醫療問題只能回答資料庫空白提示，日常聊天可正常回應。';
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview', systemInstruction: systemWithKB });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: systemWithKB });
 
     const chatHistory = (history || [])
       .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
