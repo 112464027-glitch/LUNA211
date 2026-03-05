@@ -668,6 +668,7 @@
       <button class="btn-primary" onclick="addBatch()">＋ 加入資料庫</button>
       <button class="btn-secondary" onclick="clearAll()">清除全部</button>
     </div>
+    <button class="btn-secondary" onclick="cleanEmptyBatches()" style="width:100%;margin-top:4px;font-size:12px;">🧹 清除空資料</button>
 
     <div id="total-badge" class="total-badge" style="display:none">
       <span>🗂️</span>
@@ -1184,6 +1185,20 @@
         document.getElementById('total-badge').style.display = 'none';
       }
     } catch(e) { alert('刪除失敗：' + e.message); }
+  }
+
+  async function cleanEmptyBatches() {
+    const empty = batches.filter(b => !b.text || b.text.trim() === '' || !b.chars);
+    if (!empty.length) { alert('沒有空資料！'); return; }
+    for (const b of empty) {
+      await fetch('/api/batches', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: b.id })
+      });
+    }
+    await loadBatches();
+    alert(`已清除 ${empty.length} 筆空資料 🌸`);
   }
 
   async function clearAll() {
