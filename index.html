@@ -864,16 +864,17 @@
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = JSON.parse(e.target.result);
         if (!data.batches || !Array.isArray(data.batches)) throw new Error('格式錯誤');
-        batches = data.batches;
-        batchCounter = data.batchCounter || batches.length;
-        saveBatches();
-        renderLog();
-        updateTotal();
-        addSystemMsg(`✅ 成功匯入 ${batches.length} 筆資料庫`);
+        // Clear and re-upload all batches
+        await fetch('/api/batches', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'all' }) });
+        for (const b of data.batches) {
+          await fetch('/api/batches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: b.name, text: b.text }) });
+        }
+        await loadBatches();
+        addSystemMsg(`✅ 成功匯入 ${data.batches.length} 筆資料庫`);
       } catch(err) {
         alert('匯入失敗，請確認是正確的 Luna 資料庫 JSON 檔案');
       }
