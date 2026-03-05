@@ -1069,9 +1069,7 @@
       question, zhAnswer, hasDB,
       batchNames: batchNames || []
     });
-    saveLog();
     updateExpStats();
-    // Auto-add question to list if not already there
     if (!questions.includes(question.trim())) {
       questions.push(question.trim());
       saveQuestions();
