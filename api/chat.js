@@ -28,16 +28,22 @@ async function kvGet(key) {
     headers: { Authorization: `Bearer ${token}` }
   });
   const data = await res.json();
-  return data.result ? JSON.parse(data.result) : null;
+  if (!data.result) return null;
+  try {
+    return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+  } catch(e) {
+    return null;
+  }
 }
 
 async function kvSet(key, value) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const serialized = JSON.stringify(value);
   await fetch(`${url}/set/${key}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(JSON.stringify(value))
+    body: JSON.stringify([key, serialized])
   });
 }
 
