@@ -144,11 +144,11 @@
   .btn-pink { background: linear-gradient(135deg, var(--accent-soft), var(--accent)); color: white; border: none; border-radius: 12px; padding: 9px 20px; font-weight: 600; cursor: pointer; }
   .db-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
   .db-item { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; }
-  .db-item-del { margin-left: auto; border: none; background: none; cursor: pointer; color: #aaa; }
+  .db-item-del { margin-left: auto; border: none; background: none; cursor: pointer; color: #d63384; font-weight: bold; font-size: 16px; padding: 0 8px; }
   .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .stat-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
   .stat-num { font-size: 26px; font-weight: 700; color: var(--accent); }
-  .log-item { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; }
+  .log-item { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 13px 15px; margin-bottom: 10px; border-left: 5px solid var(--border); }
 </style>
 </head>
 <body>
@@ -186,10 +186,15 @@
   </div>
   <input type="file" id="file-input" hidden onchange="onFileSelect(event)" />
   <div style="text-align:center; margin:10px 0; font-size:12px; color:#aaa;">── 或輸入文字 ──</div>
-  <textarea class="text-input-box" id="text-input" placeholder="貼上資料（例如月經週期、症狀描述等）..." rows="3"></textarea>
+  <textarea class="text-input-box" id="text-input" placeholder="直接貼上衛教資料、月經紀錄等內容..." rows="3"></textarea>
   <button class="btn-pink" style="margin-top:8px" onclick="addTextEntry()">＋ 新增到資料庫</button>
-  <div class="db-list" id="db-list"></div>
-  <button class="btn-pink" style="background:#999; margin-top:20px" onclick="clearAllDb()">🗑 清除所有資料庫內容</button>
+  
+  <div style="margin-top:20px">
+    <div style="font-size:13px; font-weight:600; color:var(--text-mid);">📋 資料庫清單</div>
+    <div class="db-list" id="db-list"></div>
+  </div>
+  
+  <button class="btn-pink" style="background:#666; margin-top:20px" onclick="clearAllDb()">🗑 清除所有資料庫內容</button>
 </div>
 
 <div id="log-panel" class="tab-panel">
@@ -199,28 +204,28 @@
     <div class="stat-card"><div class="stat-num" id="stat-no-db">0</div><div class="stat-label">無資料庫</div></div>
   </div>
   <div id="log-list" style="margin-top:15px"></div>
-  <button class="btn-pink" style="background:#999; margin-top:20px" onclick="clearLog()">🗑 清除所有問答記錄</button>
+  <button class="btn-pink" style="background:#666; margin-top:20px" onclick="clearLog()">🗑 清除所有問答記錄</button>
 </div>
 
 <script>
 // ════════════════════════════════════════════════════
-// STATE & STORAGE
+// 核心狀態管理與 localStorage 存檔
 // ════════════════════════════════════════════════════
 let isLoading = false;
 let chatHistory = [];
 let dbEntries = [];
 let expLog = [];
 
-// 儲存到 localStorage
-function saveData() {
-    localStorage.setItem('luna_db', JSON.stringify(dbEntries));
-    localStorage.setItem('luna_log', JSON.stringify(expLog));
+// 存檔：把資料庫和記錄寫入瀏覽器硬碟
+function persistToStorage() {
+    localStorage.setItem('luna_db_v2', JSON.stringify(dbEntries));
+    localStorage.setItem('luna_log_v2', JSON.stringify(expLog));
 }
 
-// 從 localStorage 讀取
-function loadData() {
-    const savedDb = localStorage.getItem('luna_db');
-    const savedLog = localStorage.getItem('luna_log');
+// 讀取：網頁載入時恢復資料
+function loadFromStorage() {
+    const savedDb = localStorage.getItem('luna_db_v2');
+    const savedLog = localStorage.getItem('luna_log_v2');
     if (savedDb) dbEntries = JSON.parse(savedDb);
     if (savedLog) expLog = JSON.parse(savedLog);
     renderDb();
@@ -232,7 +237,7 @@ function loadData() {
 const LUNA_SVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="#ffd6e8"/><ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/><ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/><circle cx="18" cy="23" r="2" fill="black"/><circle cx="26" cy="23" r="2" fill="black"/><path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" fill="none"/></svg>`;
 
 // ════════════════════════════════════════════════════
-// UI & NAVIGATION
+// UI 功能
 // ════════════════════════════════════════════════════
 function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -247,14 +252,11 @@ function scrollToBottom() { const msgs = document.getElementById('messages'); ms
 function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 110) + 'px'; }
 function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
 
-// ════════════════════════════════════════════════════
-// CHAT LOGIC
-// ════════════════════════════════════════════════════
 function renderBotContent(text) {
   const parts = text.split(/\n---\n|\n---$/);
   if (parts.length >= 2) {
-    return `<div class="lang-block zh-block"><div class="lang-tag">🇹🇼 中文</div><div class="lang-text">${escHtml(parts[0].trim())}</div></div>
-            <div class="lang-block id-block"><div class="lang-tag">🇮🇩 Indonesia</div><div class="lang-text">${escHtml(parts[1].trim())}</div></div>`;
+    return `<div class="lang-block zh-block"><div class="lang-tag">🇹🇼 繁體中文</div><div class="lang-text">${escHtml(parts[0].trim())}</div></div>
+            <div class="lang-block id-block"><div class="lang-tag">🇮🇩 Bahasa Indonesia</div><div class="lang-text">${escHtml(parts[1].trim())}</div></div>`;
   }
   return `<div class="lang-text">${escHtml(text)}</div>`;
 }
@@ -271,6 +273,9 @@ function addMessage(role, text) {
   scrollToBottom();
 }
 
+// ════════════════════════════════════════════════════
+// API 連線與發送
+// ════════════════════════════════════════════════════
 async function sendMessage() {
   if (isLoading) return;
   const input = document.getElementById('user-input');
@@ -291,28 +296,32 @@ async function sendMessage() {
   const dbContext = dbEntries.map(e => `[${e.name}]: ${e.content}`).join('\n');
 
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('/api/chat', { // 對應 Vercel api/chat.js
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, history: chatHistory.slice(-10), dbContext })
+      body: JSON.stringify({ 
+        prompt: prompt,
+        history: chatHistory.slice(-10),
+        dbContext: dbContext 
+      })
     });
 
     document.getElementById(tid).remove();
 
-    if (!res.ok) throw new Error(`連線失敗 (${res.status})`);
+    if (!res.ok) throw new Error(`連線失敗 (${res.status})。請確認後端是否運作正常。`);
 
     const data = await res.json();
-    const reply = data.reply || "Luna 目前無法回應。";
+    const reply = data.reply || "抱歉，我暫時無法回答。";
     addMessage('bot', reply);
     chatHistory.push({ role: 'user', content: prompt }, { role: 'model', content: reply });
     
-    // 儲存到紀錄
+    // 紀錄實驗數據並存檔
     expLog.unshift({ time: new Date().toLocaleString(), question: prompt, answer: reply, hasDb: dbEntries.length > 0 });
     updateStats();
-    saveData(); // 存檔
+    persistToStorage(); 
 
   } catch (err) {
-    document.getElementById(tid)?.remove();
+    if(document.getElementById(tid)) document.getElementById(tid).remove();
     const ediv = document.createElement('div'); ediv.className = 'error-msg';
     ediv.innerHTML = `⚠️ 錯誤: ${err.message}`;
     document.getElementById('messages').appendChild(ediv);
@@ -323,7 +332,7 @@ async function sendMessage() {
 }
 
 // ════════════════════════════════════════════════════
-// DATABASE LOGIC
+// 資料庫邏輯 (加上存檔)
 // ════════════════════════════════════════════════════
 function onFileSelect(e) { 
     const f = e.target.files[0]; 
@@ -331,7 +340,7 @@ function onFileSelect(e) {
     const reader = new FileReader();
     reader.onload = (ev) => {
         dbEntries.push({ id: Date.now(), name: f.name, content: ev.target.result });
-        renderDb(); updateDbBadge(); saveData();
+        renderDb(); updateDbBadge(); persistToStorage();
     };
     reader.readAsText(f);
 }
@@ -339,21 +348,28 @@ function onFileSelect(e) {
 function addTextEntry() {
     const val = document.getElementById('text-input').value.trim();
     if(val) { 
-        dbEntries.push({ id: Date.now(), name: '文字輸入', content: val }); 
-        renderDb(); updateDbBadge(); saveData();
+        dbEntries.push({ id: Date.now(), name: '手動輸入', content: val }); 
+        renderDb(); updateDbBadge(); persistToStorage();
         document.getElementById('text-input').value=''; 
     }
 }
 
 function deleteDbEntry(id) {
     dbEntries = dbEntries.filter(e => e.id !== id);
-    renderDb(); updateDbBadge(); saveData();
+    renderDb(); updateDbBadge(); persistToStorage();
 }
 
 function renderDb() {
     const list = document.getElementById('db-list');
-    list.innerHTML = dbEntries.length === 0 ? '<p style="color:#aaa; font-size:12px; margin-top:10px;">目前無資料</p>' : 
-        dbEntries.map((e) => `<div class="db-item">📄 ${e.name} (${e.content.length}字) <button class="db-item-del" onclick="deleteDbEntry(${e.id})">✕</button></div>`).join('');
+    if (dbEntries.length === 0) {
+        list.innerHTML = '<p style="color:#aaa; font-size:12px; margin-top:10px;">目前尚無資料庫內容</p>';
+        return;
+    }
+    list.innerHTML = dbEntries.map((e) => `
+        <div class="db-item">
+            <span>📄 ${e.name} (${e.content.length}字)</span>
+            <button class="db-item-del" onclick="deleteDbEntry(${e.id})">✕</button>
+        </div>`).join('');
 }
 
 function updateDbBadge() {
@@ -363,13 +379,13 @@ function updateDbBadge() {
 }
 
 function clearAllDb() {
-    if(confirm('確定清除所有資料庫內容？這無法復原。')) {
-        dbEntries = []; renderDb(); updateDbBadge(); saveData();
+    if(confirm('確定清除所有資料庫內容？這會刪除瀏覽器的存檔，無法復原。')) {
+        dbEntries = []; renderDb(); updateDbBadge(); persistToStorage();
     }
 }
 
 // ════════════════════════════════════════════════════
-// LOG & STATS LOGIC
+// 實驗記錄邏輯
 // ════════════════════════════════════════════════════
 function updateStats() {
     document.getElementById('stat-total').textContent = expLog.length;
@@ -379,27 +395,31 @@ function updateStats() {
 
 function renderLog() {
     const logList = document.getElementById('log-list');
-    logList.innerHTML = expLog.length === 0 ? '<p style="color:#aaa; font-size:12px;">尚無問答記錄</p>' :
-        expLog.map(l => `<div class="log-item">
-        <small style="color:#999">${l.time} [${l.hasDb?'📂 有資料庫':'💬 無資料庫'}]</small>
-        <div style="font-weight:bold; margin-top:4px;">Q: ${escHtml(l.question)}</div>
-        <div style="font-size:12px; color:#666; margin-top:4px;">A: ${escHtml(l.answer)}</div>
-    </div>`).join('');
+    if (expLog.length === 0) {
+        logList.innerHTML = '<p style="color:#aaa; font-size:12px;">尚無問答記錄，開始對話後會自動顯示。</p>';
+        return;
+    }
+    logList.innerHTML = expLog.map(l => `
+        <div class="log-item">
+            <small style="color:#999">${l.time} | ${l.hasDb?'📂 資料庫輔助模式':'💬 纯聊天模式'}</small>
+            <div style="font-weight:bold; margin-top:5px;">Q: ${escHtml(l.question)}</div>
+            <div style="font-size:12px; color:#555; margin-top:4px;">A: ${escHtml(l.answer)}</div>
+        </div>`).join('');
 }
 
 function clearLog() {
-    if(confirm('確定清除所有歷史對話記錄？')) {
-        expLog = []; updateStats(); renderLog(); saveData();
+    if(confirm('確定清除所有歷史問答記錄？')) {
+        expLog = []; updateStats(); renderLog(); persistToStorage();
     }
 }
 
 // ════════════════════════════════════════════════════
-// INITIALIZATION
+// 初始化
 // ════════════════════════════════════════════════════
 window.onload = () => {
-    loadData();
+    loadFromStorage();
     if (chatHistory.length === 0) {
-        addMessage('bot', '嗨！我是 Luna 🌸\n請輸入妳的婦科健康問題，我會同時用中文與印尼文回答。\n---\nHalo! Saya Luna 🌸\nSilakan masukkan pertanyaan Anda, saya akan menjawab dalam bahasa Mandarin dan Indonesia.');
+        addMessage('bot', '嗨！我是 Luna 🌸\n我可以協助解答婦科健康問題，並同時用中文與印尼文回答。\n---\nHalo! Saya Luna 🌸\nSaya dapat membantu menjawab pertanyaan kesehatan ginekologi dalam bahasa Mandarin dan Indonesia.');
     }
 };
 </script>
