@@ -1,1729 +1,296 @@
-import { useState, useRef, useCallback, useEffect } from "react";
-
-// ── Luna SVG Avatar ────────────────────────────────────────────────────────────
-const LunaAvatar = ({ size = 44 }) => (
-  <svg width={size} height={size} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="22" r="22" fill="url(#lunaGrad)"/>
-    <defs>
-      <radialGradient id="lunaGrad" cx="50%" cy="40%" r="60%">
-        <stop offset="0%" stopColor="#ffd6e8"/>
-        <stop offset="100%" stopColor="#e8779a"/>
-      </radialGradient>
-    </defs>
-    {/* Hair */}
-    <ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/>
-    {/* Face */}
-    <ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/>
-    {/* Top hair */}
-    <ellipse cx="22" cy="12" rx="13" ry="7" fill="#4a2040"/>
-    {/* Side hair */}
-    <ellipse cx="10" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-    <ellipse cx="34" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-    {/* Hair highlight */}
-    <ellipse cx="17" cy="11" rx="3" ry="2" fill="#7a4060" opacity="0.5"/>
-    {/* Ears */}
-    <ellipse cx="11" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-    <ellipse cx="33" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-    {/* Eyes white */}
-    <ellipse cx="18" cy="23" rx="2.5" ry="2.8" fill="white"/>
-    <ellipse cx="26" cy="23" rx="2.5" ry="2.8" fill="white"/>
-    {/* Pupils */}
-    <circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-    <circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-    {/* Eye shine */}
-    <circle cx="19.2" cy="22.6" r="0.6" fill="white"/>
-    <circle cx="27.2" cy="22.6" r="0.6" fill="white"/>
-    {/* Eyelashes */}
-    <line x1="16" y1="20.8" x2="15.2" y2="19.8" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    <line x1="18" y1="20.3" x2="17.8" y2="19.2" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    <line x1="20" y1="20.8" x2="20.4" y2="19.8" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    <line x1="24" y1="20.8" x2="23.6" y2="19.8" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    <line x1="26" y1="20.3" x2="26.2" y2="19.2" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    <line x1="28" y1="20.8" x2="28.8" y2="19.8" stroke="#3d1a2e" strokeWidth="0.7" strokeLinecap="round"/>
-    {/* Blush */}
-    <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-    <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-    {/* Nose */}
-    <ellipse cx="22" cy="27" rx="1" ry="0.7" fill="#e8a090" opacity="0.6"/>
-    {/* Smile */}
-    <path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-    {/* Hair pin */}
-    <circle cx="29" cy="13" r="3" fill="#ff6fa8" opacity="0.9"/>
-    <circle cx="29" cy="13" r="1.5" fill="#ffd6e8"/>
-    <circle cx="29" cy="13" r="0.7" fill="#ff6fa8"/>
-  </svg>
-);
-
-const LunaSmall = () => (
-  <svg width="32" height="32" viewBox="0 0 44 44" fill="none">
-    <circle cx="22" cy="22" r="22" fill="url(#lg2)"/>
-    <defs><radialGradient id="lg2" cx="50%" cy="40%" r="60%"><stop offset="0%" stopColor="#ffd6e8"/><stop offset="100%" stopColor="#e8779a"/></radialGradient></defs>
-    <ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/>
-    <ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/>
-    <ellipse cx="22" cy="12" rx="13" ry="7" fill="#4a2040"/>
-    <ellipse cx="10" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-    <ellipse cx="34" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-    <ellipse cx="11" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-    <ellipse cx="33" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-    <ellipse cx="18" cy="23" rx="2.5" ry="2.8" fill="white"/>
-    <ellipse cx="26" cy="23" rx="2.5" ry="2.8" fill="white"/>
-    <circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-    <circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-    <circle cx="19.2" cy="22.6" r="0.6" fill="white"/>
-    <circle cx="27.2" cy="22.6" r="0.6" fill="white"/>
-    <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-    <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-    <path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-    <circle cx="29" cy="13" r="3" fill="#ff6fa8" opacity="0.9"/>
-    <circle cx="29" cy="13" r="1.5" fill="#ffd6e8"/>
-  </svg>
-);
-
-// ── Icons ──────────────────────────────────────────────────────────────────────
-const Icon = ({ d, size = 16, color = "currentColor", sw = 1.8 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-    stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
-    <path d={d} />
-  </svg>
-);
-const IUpload = () => <Icon d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />;
-const ISend   = () => <Icon d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" />;
-const ISearch = () => <Icon d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />;
-const IClose  = () => <Icon d="M18 6L6 18M6 6l12 12" />;
-const ICheck  = () => <Icon d="M20 6L9 17l-5-5" />;
-const IChevL  = () => <Icon d="M15 18l-6-6 6-6" />;
-const IChevR  = () => <Icon d="M9 18l6-6-6-6" />;
-const IChevD  = () => <Icon d="M6 9l6 6 6-6" />;
-const ITrash  = () => <Icon d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" />;
-const IPlus   = () => <Icon d="M12 5v14M5 12h14" />;
-const IExp    = () => <Icon d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18" />;
-
-// ── Helpers ────────────────────────────────────────────────────────────────────
-function parseCSV(text) {
-  const lines = text.trim().split("\n");
-  if (lines.length < 2) return { headers: [], rows: [] };
-  const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
-  const rows = lines.slice(1).map(line => {
-    const vals = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
-    const obj = {};
-    headers.forEach((h, i) => { obj[h] = vals[i] ?? ""; });
-    return obj;
-  });
-  return { headers, rows };
-}
-function parseJSON(text) {
-  const data = JSON.parse(text);
-  const arr = Array.isArray(data) ? data : [data];
-  return { headers: [...new Set(arr.flatMap(Object.keys))], rows: arr };
-}
-function formatDataForAI(tables, notes) {
-  const tp = tables.map(t => {
-    const preview = t.rows.slice(0, 20);
-    const cols = t.headers.map(h => h + " (sample: " + preview.map(r => r[h]).filter(Boolean).slice(0, 3).join(", ") + ")").join("; ");
-    return "[表格: " + t.name + "]\n欄位: " + cols + "\n筆數: " + t.rows.length + "\n前5筆:\n" +
-      preview.slice(0, 5).map((r, i) => "  " + (i + 1) + ". " + JSON.stringify(r)).join("\n");
-  }).join("\n\n");
-  const np = notes.map(n => "[文字資料: " + n.name + "]\n" + n.content).join("\n\n---\n\n");
-  return [tp, np].filter(Boolean).join("\n\n");
-}
-function nowTime() { return new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }); }
-function nowDate() { return new Date().toLocaleDateString("zh-TW", { year: "numeric", month: "2-digit", day: "2-digit" }); }
-
-// ── CSS ────────────────────────────────────────────────────────────────────────
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
-:root {
-  --bg:#fff0f5; --surface:#fff5f8; --surface2:#ffe8f0;
-  --border:#f4c6d8; --accent:#d63384; --accent-soft:#e8779a;
-  --accent-light:#ffe0ec; --pink-deep:#c2185b; --pink-pale:#fce4ec;
-  --pink-mid:#f48fb1; --text:#2d1b26; --text-mid:#6b3a52;
-  --text-muted:#b07090; --radius:18px;
-  --shadow:0 2px 20px rgba(180,60,100,0.10);
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif}
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
-
-/* Layout */
-.app{height:100vh;display:flex;position:relative;background:var(--bg);overflow:hidden}
-
-/* Toggle */
-.panel-toggle{
-  position:absolute;top:50%;transform:translateY(-50%);z-index:50;
-  width:22px;height:48px;background:var(--accent);border:none;
-  border-radius:0 12px 12px 0;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:2px 0 10px rgba(214,51,132,0.25);transition:left 0.35s,background 0.2s;
-}
-.panel-toggle:hover{background:var(--pink-deep)}
-
-/* Left panel */
-.left-panel{
-  width:300px;min-width:300px;background:var(--surface);
-  border-right:1.5px solid var(--border);
-  display:flex;flex-direction:column;overflow:hidden;
-  transition:width 0.35s,min-width 0.35s;
-}
-.left-panel.collapsed{width:0;min-width:0;border-right:none}
-
-.panel-header{
-  padding:18px 18px 12px;border-bottom:1px solid var(--border);
-  background:linear-gradient(135deg,#ffe4ef 0%,#ffd6e7 100%);flex-shrink:0;
-}
-.panel-eyebrow{font-size:10px;font-weight:600;letter-spacing:0.16em;color:var(--accent);text-transform:uppercase;margin-bottom:3px}
-.panel-h2{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--text)}
-.panel-desc{margin-top:3px;font-size:11px;color:var(--text-mid);line-height:1.5}
-
-.panel-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px}
-
-.section-label{
-  font-size:10px;font-weight:600;letter-spacing:0.12em;color:var(--accent);
-  text-transform:uppercase;display:flex;align-items:center;gap:5px;
-}
-.section-label::before{content:'';display:inline-block;width:3px;height:11px;background:var(--accent);border-radius:2px}
-
-/* Side tabs */
-.side-tabs{display:flex;gap:4px}
-.side-tab{
-  flex:1;padding:6px 4px;background:transparent;
-  border:1.5px solid var(--border);border-radius:10px;
-  color:var(--text-muted);font-size:11px;font-weight:500;
-  cursor:pointer;font-family:'DM Sans',sans-serif;
-  display:flex;align-items:center;justify-content:center;gap:4px;
-  transition:all 0.2s;
-}
-.side-tab:hover{border-color:var(--accent-soft);color:var(--accent)}
-.side-tab.active{background:var(--pink-pale);color:var(--pink-deep);border-color:var(--pink-mid);font-weight:600}
-
-/* Log items */
-.log-item{
-  background:white;border:1px solid var(--border);border-radius:12px;
-  padding:8px 10px;display:flex;align-items:center;justify-content:space-between;
-  animation:slideIn 0.2s ease;cursor:pointer;transition:border-color 0.2s;
-  box-shadow:0 1px 4px rgba(200,60,100,0.05);
-}
-.log-item:hover{border-color:var(--accent-soft)}
-.log-item.active{border-color:var(--accent);background:var(--pink-pale)}
-@keyframes slideIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.log-num{
-  width:20px;height:20px;border-radius:6px;
-  background:var(--pink-pale);color:var(--accent);
-  font-size:10px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.log-name{font-size:12px;font-weight:500;color:var(--text)}
-.log-sub{font-size:10px;color:var(--text-muted);margin-top:1px}
-.log-delete{
-  background:none;border:none;cursor:pointer;color:var(--text-muted);
-  font-size:15px;padding:2px 5px;border-radius:6px;
-  transition:color 0.2s,background 0.2s;line-height:1;
-}
-.log-delete:hover{color:#c0392b;background:#fde8e8}
-.log-empty{font-size:12px;color:var(--text-muted);text-align:center;padding:14px 0;font-style:italic}
-
-/* Buttons */
-.btn-primary{
-  background:linear-gradient(135deg,var(--accent-soft),var(--accent));
-  color:white;border:none;border-radius:12px;
-  padding:9px 14px;font-family:'DM Sans',sans-serif;
-  font-size:13px;font-weight:500;cursor:pointer;
-  transition:opacity 0.2s,transform 0.15s;
-  box-shadow:0 2px 8px rgba(214,51,132,0.25);
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-primary:hover{opacity:0.88;transform:translateY(-1px)}
-.btn-ghost{
-  background:transparent;color:var(--accent);
-  border:1.5px solid var(--accent);border-radius:12px;
-  padding:9px 14px;font-family:'DM Sans',sans-serif;
-  font-size:12px;cursor:pointer;transition:background 0.2s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-ghost:hover{background:var(--accent-light)}
-
-/* Right panel */
-.right-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
-
-/* Header */
-.chat-header{
-  padding:12px 20px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;
-  background:var(--surface);box-shadow:var(--shadow);flex-shrink:0;
-}
-.header-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--text)}
-.header-sub{font-size:11px;color:var(--text-muted);margin-top:1px}
-.status-badge{
-  margin-left:auto;display:flex;align-items:center;gap:6px;
-  background:var(--pink-pale);border:1px solid var(--border);
-  border-radius:20px;padding:5px 12px;font-size:11px;color:var(--pink-deep);font-weight:500;
-  flex-shrink:0;
-}
-.online-dot{width:7px;height:7px;border-radius:50%;background:#e91e8c;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-
-/* Tab bar */
-.tab-bar{
-  display:flex;gap:4px;padding:10px 20px 0;
-  border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;
-}
-.tab-btn{
-  padding:7px 15px;font-size:12px;font-weight:500;
-  border:none;background:transparent;cursor:pointer;
-  color:var(--text-muted);border-radius:10px 10px 0 0;
-  border-bottom:2.5px solid transparent;font-family:'DM Sans',sans-serif;
-  transition:color 0.2s,border-color 0.2s,background 0.2s;
-  display:flex;align-items:center;gap:5px;
-}
-.tab-btn:hover{color:var(--accent);background:var(--accent-light)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
-
-/* Messages */
-.messages{
-  flex:1;overflow-y:auto;padding:18px 20px;
-  display:flex;flex-direction:column;gap:14px;
-  background:linear-gradient(180deg,#fff5f8 0%,#fff0f5 100%);
-}
-.message{display:flex;gap:8px;max-width:78%;animation:fadeUp 0.25s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.message.user{align-self:flex-end;flex-direction:row-reverse}
-.message.bot{align-self:flex-start}
-.msg-av{
-  width:32px;height:32px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;margin-top:4px;
-  overflow:hidden;
-}
-.message.bot .msg-av{box-shadow:0 2px 8px rgba(214,51,132,0.25)}
-.message.user .msg-av{background:var(--pink-pale);border:1px solid var(--border);font-size:14px}
-.bubble-wrap{display:flex;flex-direction:column;gap:3px}
-.sender{font-size:10px;color:var(--text-muted);padding:0 4px}
-.message.user .sender{text-align:right}
-.msg-time{font-size:9px;color:var(--text-muted);opacity:0.7;margin-left:4px}
-.bubble{
-  padding:10px 14px;font-size:13.5px;line-height:1.75;
-  border-radius:var(--radius);box-shadow:0 1px 5px rgba(180,60,100,0.07);
-}
-.message.bot .bubble{background:#fff0f6;border:1px solid #f9c6da;border-top-left-radius:4px;color:var(--text)}
-.message.user .bubble{background:white;border:1px solid var(--border);border-top-right-radius:4px;color:var(--text)}
-.typing{display:flex;gap:5px;padding:4px 2px}
-.typing span{
-  width:7px;height:7px;border-radius:50%;
-  background:var(--accent-soft);animation:bounce 1.2s infinite;
-}
-.typing span:nth-child(2){animation-delay:0.2s}
-.typing span:nth-child(3){animation-delay:0.4s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
-
-/* Input area */
-.input-area{
-  padding:12px 18px;border-top:1px solid var(--border);
-  background:var(--surface);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;
-}
-.chat-textarea{
-  flex:1;background:white;border:1.5px solid var(--border);border-radius:16px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13.5px;
-  padding:10px 14px;resize:none;outline:none;max-height:100px;line-height:1.6;
-  transition:border-color 0.2s;
-}
-.chat-textarea:focus{border-color:var(--accent-soft)}
-.chat-textarea::placeholder{color:var(--text-muted)}
-.send-btn{
-  background:linear-gradient(135deg,var(--accent-soft),var(--accent));
-  border:none;border-radius:14px;width:44px;height:44px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  transition:opacity 0.2s,transform 0.15s;box-shadow:0 3px 12px rgba(214,51,132,0.3);flex-shrink:0;
-}
-.send-btn:hover:not(:disabled){opacity:0.88;transform:scale(1.05)}
-.send-btn:disabled{opacity:0.3;cursor:not-allowed}
-
-/* DB toolbar */
-.db-toolbar{
-  padding:10px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;background:var(--surface);flex-shrink:0;flex-wrap:wrap;
-}
-.db-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--text)}
-.db-sub{font-size:11px;color:var(--text-muted)}
-.search-box{
-  display:flex;align-items:center;gap:7px;
-  background:white;border:1.5px solid var(--border);border-radius:10px;
-  padding:5px 10px;transition:border-color 0.2s;
-}
-.search-box:focus-within{border-color:var(--accent-soft)}
-.search-box input{background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;width:120px;outline:none}
-.search-box input::placeholder{color:var(--text-muted)}
-.ai-btn{
-  background:linear-gradient(135deg,#fce4ec,var(--pink-pale));
-  color:var(--pink-deep);border:1.5px solid var(--pink-mid);
-  border-radius:10px;padding:6px 12px;
-  font-size:12px;font-weight:600;cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:opacity 0.2s;
-  display:flex;align-items:center;gap:5px;
-}
-.ai-btn:hover{opacity:0.85}
-
-/* Data table */
-.data-table{width:100%;border-collapse:collapse;font-size:12px}
-.data-table thead{position:sticky;top:0;background:var(--surface);z-index:1}
-.data-table th{padding:8px 13px;text-align:left;color:var(--accent);border-bottom:1px solid var(--border);font-weight:600;font-size:11px;letter-spacing:0.05em;white-space:nowrap}
-.data-table th:first-child{color:var(--text-muted);text-align:right;width:40px}
-.data-table td{padding:7px 13px;color:var(--text-mid);border-bottom:1px solid #fff0f5;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.data-table td:first-child{color:var(--text-muted);text-align:right}
-.data-table tr:hover td{background:#fff5f8}
-
-/* Drop zone */
-.drop-zone{
-  width:360px;border:2px dashed var(--pink-mid);border-radius:20px;
-  padding:40px;text-align:center;background:white;cursor:pointer;
-  transition:all 0.2s;box-shadow:0 2px 16px rgba(200,60,100,0.08);
-}
-.drop-zone:hover{border-color:var(--accent);background:var(--pink-pale)}
-
-/* Context bar */
-.ctx-bar{
-  padding:6px 18px;background:var(--surface);border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0;
-}
-.ctx-chip{font-size:11px;border-radius:20px;padding:3px 10px;font-weight:500}
-.ctx-chip.table{background:var(--pink-pale);color:var(--pink-deep);border:1px solid var(--pink-mid)}
-.ctx-chip.note{background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8}
-.ctx-empty{font-size:11px;color:#e65100;background:#fff3e0;border:1px solid #ffcc80;border-radius:20px;padding:4px 12px}
-
-/* ── Experiment Panel ── */
-.exp-panel{flex:1;overflow-y:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px;background:linear-gradient(180deg,#fff5f8,#fff0f5)}
-
-.exp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.stat-card{background:white;border:1px solid var(--border);border-radius:14px;padding:13px 15px;box-shadow:0 1px 6px rgba(200,60,100,0.06)}
-.stat-label{font-size:10px;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase}
-.stat-value{font-size:22px;font-weight:700;color:var(--accent);margin-top:4px;font-family:'Playfair Display',serif}
-.stat-sub{font-size:10px;color:var(--text-muted);margin-top:2px}
-
-/* Sub-tabs */
-.exp-sub-tabs{display:flex;gap:6px;flex-wrap:wrap}
-.exp-sub-tab{
-  padding:6px 14px;font-size:12px;font-weight:500;
-  border:1.5px solid var(--border);border-radius:20px;
-  background:white;color:var(--text-mid);cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:all 0.2s;
-}
-.exp-sub-tab:hover{border-color:var(--accent-soft);color:var(--accent)}
-.exp-sub-tab.active{background:var(--accent);color:white;border-color:var(--accent)}
-
-/* Question list */
-.q-item{
-  background:white;border:1.5px solid var(--border);border-radius:14px;
-  cursor:pointer;transition:border-color 0.2s,box-shadow 0.2s;overflow:hidden;
-}
-.q-item:hover{border-color:var(--accent-soft);box-shadow:0 2px 10px rgba(214,51,132,0.1)}
-.q-item.open{border-color:var(--accent)}
-.q-item-header{display:flex;align-items:center;gap:8px;padding:11px 14px}
-.q-text{flex:1;font-size:13px;font-weight:500;color:var(--text)}
-.q-count{font-size:11px;color:var(--text-muted);background:var(--surface2);border-radius:20px;padding:2px 8px;white-space:nowrap}
-.q-arrow{font-size:11px;color:var(--text-muted);transition:transform 0.2s}
-.q-item.open .q-arrow{transform:rotate(180deg)}
-.q-delete{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:14px;padding:2px 5px;border-radius:6px;transition:color 0.2s,background 0.2s}
-.q-delete:hover{color:#c0392b;background:#fde8e8}
-
-.q-detail{padding:0 14px 12px;border-top:1px solid var(--border)}
-.batch-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:9px 0 7px}
-.batch-tab{
-  padding:4px 11px;font-size:11px;font-weight:600;
-  border:1.5px solid var(--border);border-radius:20px;
-  background:white;color:var(--text-mid);cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:all 0.2s;
-}
-.batch-tab:hover{border-color:var(--accent-soft)}
-.batch-tab.active{background:var(--pink-pale);color:var(--pink-deep);border-color:var(--pink-mid)}
-.batch-tab.no-db{background:#fff3e0;color:#e65100;border-color:#ffcc80}
-.batch-answer{background:var(--surface2);border-radius:12px;padding:11px 13px;font-size:13px;line-height:1.75;color:var(--text);border:1px solid var(--border);margin-bottom:6px}
-.batch-meta{font-size:10px;color:var(--text-muted);margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap}
-
-/* Time log entries */
-.exp-entry{background:white;border:1px solid var(--border);border-radius:14px;padding:13px 15px;box-shadow:0 1px 5px rgba(200,60,100,0.05);animation:slideIn 0.2s ease}
-.exp-entry-header{display:flex;align-items:center;gap:8px;margin-bottom:9px;flex-wrap:wrap}
-.exp-tag{font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 9px;border-radius:20px;text-transform:uppercase}
-.tag-nodb{background:#fff3e0;color:#e65100;border:1px solid #ffcc80}
-.tag-withdb{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
-.exp-time-lbl{font-size:11px;color:var(--text-muted);margin-left:auto}
-.exp-q{font-size:13px;color:var(--text-mid);margin-bottom:5px}
-.exp-q strong{color:var(--text);font-weight:600}
-.exp-a-label{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px}
-.exp-a{font-size:13px;color:var(--text);line-height:1.7}
-.exp-empty{text-align:center;padding:40px 0;color:var(--text-muted);font-size:14px;font-style:italic}
-.date-group{display:flex;flex-direction:column;gap:8px}
-.date-label{font-size:12px;font-weight:600;color:var(--text-mid);background:var(--pink-pale);border:1px solid var(--border);border-radius:20px;padding:4px 13px;align-self:flex-start;margin-bottom:2px}
-.entry-del{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:6px;transition:background 0.2s;margin-left:auto;line-height:1}
-.entry-del:hover{background:#fde8e8}
-
-/* Add question row */
-.add-q-row{display:flex;gap:8px}
-.add-q-input{
-  flex:1;background:white;border:1.5px solid var(--border);border-radius:12px;
-  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
-  padding:8px 13px;outline:none;transition:border-color 0.2s;
-}
-.add-q-input:focus{border-color:var(--accent-soft)}
-.add-q-input::placeholder{color:var(--text-muted)}
-.add-q-btn{
-  background:var(--accent);color:white;border:none;border-radius:12px;
-  padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;
-  font-family:'DM Sans',sans-serif;transition:opacity 0.2s;white-space:nowrap;
-  display:flex;align-items:center;gap:4px;
-}
-.add-q-btn:hover{opacity:0.85}
-
-/* Export */
-.export-btn{
-  background:var(--accent);color:white;border:none;border-radius:10px;
-  padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;
-  font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:5px;
-  transition:opacity 0.2s;
-}
-.export-btn:hover{opacity:0.85}
-.export-btn.red{background:#e57373}
-
-/* Modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(45,27,38,0.55);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal{width:510px;background:var(--surface);border:1.5px solid var(--border);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:13px;box-shadow:0 8px 40px rgba(180,60,100,0.18)}
-.modal-title{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--text)}
-.field-label{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px}
-.modal input,.modal textarea{width:100%;background:white;border:1.5px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 13px;outline:none;transition:border-color 0.2s;line-height:1.6}
-.modal input:focus,.modal textarea:focus{border-color:var(--accent-soft)}
-.modal textarea{resize:vertical}
-.modal input::placeholder,.modal textarea::placeholder{color:var(--text-muted)}
-.char-count{font-size:10px;color:var(--text-muted);text-align:right;margin-top:3px}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end}
-
-/* Toast */
-.toast{position:fixed;bottom:20px;right:20px;padding:10px 18px;border-radius:12px;font-size:13px;z-index:999;box-shadow:var(--shadow)}
-.toast-success{background:#fce4ec;border:1px solid #f48fb1;color:var(--pink-deep)}
-.toast-error{background:#fde8e8;border:1px solid #ef9a9a;color:#c62828}
-.toast-info{background:var(--pink-pale);border:1px solid var(--border);color:var(--text-mid)}
-
-/* Note view */
-.note-content{font-size:13px;color:var(--text-mid);line-height:1.8;white-space:pre-wrap;word-break:break-word;background:white;border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
-`;
-
-// ── Main Component ─────────────────────────────────────────────────────────────
-export default function App() {
-  // DB state
-  const [tables, setTables] = useState([]);
-  const [notes, setNotes] = useState([]);
-  const [activeId, setActiveId] = useState(null);
-  const [activeType, setActiveType] = useState(null);
-  const [sideMode, setSideMode] = useState("tables");
-  const [collapsed, setCollapsed] = useState(false);
-  const [searchQ, setSearchQ] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [textTitle, setTextTitle] = useState("");
-  const [textBody, setTextBody] = useState("");
-  // Chat state
-  const [tab, setTab] = useState("db");
-  const [messages, setMessages] = useState([
-    { role: "bot", text: "嗨！我是 Luna，你的婦科健康知識助理 🌸\n\n我可以用 中文 及 印尼文 解答你的婦科問題，例如：\n• 月經不規律或痛經是什麼原因？\n• 白帶異常代表什麼？\n• 多囊性卵巢症候群（PCOS）是什麼？\n• 子宮頸抹片多久做一次？\n• 更年期有哪些常見症狀？\n\n你也可以上傳婦科相關資料（CSV/文字），我會根據你的資料回答！\n你可以用中文、印尼文或英文提問 💬\n\n⚠️ 免責聲明：本服務僅供衛教參考，不構成醫療診斷。如有不適請就醫。\n---\nHalo! Saya Luna, asisten kesehatan wanita Anda 🌸\n\nSaya bisa menjawab pertanyaan ginekologi dalam Bahasa Mandarin dan Indonesia, misalnya:\n• Apa penyebab menstruasi tidak teratur?\n• Apa arti keputihan yang tidak normal?\n• Apa itu PCOS?\n• Seberapa sering Pap smear?\n• Apa gejala menopause?\n\nAnda juga bisa mengunggah data terkait kesehatan wanita, dan saya akan menjawab berdasarkan data Anda!\nBertanya dalam Bahasa Mandarin, Indonesia, atau Inggris — saya siap membantu 💬\n\n⚠️ Penafian: Informasi ini hanya bersifat edukatif. Jika ada keluhan, segera konsultasikan ke dokter.", time: nowTime() }
-  ]);
-  const [chatInput, setChatInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  // Experiment log state
-  const [expLog, setExpLog] = useState([]);
-  const [expView, setExpView] = useState("q"); // "q" | "time"
-  const [questions, setQuestions] = useState(["請問資料中有哪些趨勢？", "資料的統計摘要是什麼？", "有哪些異常數值？"]);
-  const [newQ, setNewQ] = useState("");
-  const [openQ, setOpenQ] = useState(null);
-  const [activeBatchTab, setActiveBatchTab] = useState({});
-  // UI
-  const [uploading, setUploading] = useState(false);
-  const [toast, setToast] = useState(null);
-  const fileRef = useRef();
-  const chatEndRef = useRef();
-
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
-
-  const showToast = (msg, type = "success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  // ── File upload ──
-  const handleFiles = useCallback(async (files) => {
-    setUploading(true);
-    const added = [];
-    for (const file of files) {
-      try {
-        const text = await file.text();
-        let parsed;
-        if (file.name.endsWith(".csv")) parsed = parseCSV(text);
-        else if (file.name.endsWith(".json")) parsed = parseJSON(text);
-        else if (file.name.endsWith(".tsv")) parsed = parseCSV(text.replace(/\t/g, ","));
-        else { showToast("不支援 " + file.name, "error"); continue; }
-        added.push({ id: Date.now() + Math.random(), name: file.name.replace(/\.[^.]+$/, ""), ...parsed });
-      } catch { showToast("解析失敗：" + file.name, "error"); }
-    }
-    if (added.length) {
-      setTables(prev => [...prev, ...added]);
-      setActiveId(added[0].id); setActiveType("table"); setSideMode("tables");
-      showToast("成功匯入 " + added.length + " 份資料表 🌸");
-    }
-    setUploading(false);
-  }, []);
-
-  const onDrop = useCallback((e) => { e.preventDefault(); handleFiles([...e.dataTransfer.files]); }, [handleFiles]);
-  const onDragOver = (e) => e.preventDefault();
-
-  // ── Save note ──
-  const saveNote = () => {
-    const body = textBody.trim();
-    if (!body) { showToast("請輸入文字內容", "error"); return; }
-    const note = { id: Date.now(), name: textTitle.trim() || ("文字資料 " + (notes.length + 1)), content: body, createdAt: new Date().toLocaleString("zh-TW") };
-    setNotes(prev => [...prev, note]);
-    setActiveId(note.id); setActiveType("note"); setSideMode("notes");
-    setShowModal(false); setTextTitle(""); setTextBody("");
-    showToast("文字資料已儲存 🌸");
-  };
-
-  const deleteItem = (id, type) => {
-    if (type === "table") setTables(prev => { const n = prev.filter(t => t.id !== id); if (activeId === id) { setActiveId(n[0]?.id ?? null); setActiveType(n[0] ? "table" : null); } return n; });
-    else setNotes(prev => { const n = prev.filter(x => x.id !== id); if (activeId === id) { setActiveId(n[0]?.id ?? null); setActiveType(n[0] ? "note" : null); } return n; });
-    showToast("已刪除", "info");
-  };
-
-  // ── AI send ──
-  const sendMessage = async () => {
-    const q = chatInput.trim();
-    if (!q || loading) return;
-    setChatInput("");
-    const t = nowTime();
-    setMessages(prev => [...prev, { role: "user", text: q, time: t }]);
-    setLoading(true);
-    const hasData = tables.length > 0 || notes.length > 0;
-    const dbCtx = hasData
-      ? "\n\n=== 使用者上傳的婦科資料庫 ===\n" + formatDataForAI(tables, notes) + "\n=== 資料庫結束 ==="
-      : "\n\n（使用者尚未上傳任何資料，請根據你的專業知識回答）";
-    const system = `你是一位名叫 Luna 的專業婦科健康知識助理 🌸，個性溫柔、有耐心、富有同理心。
-
-【語言規則 - 非常重要】
-無論使用者用中文、印尼文（Bahasa Indonesia）或英文提問，每一則回覆都必須同時包含兩段：
-第一段：繁體中文回答（完整內容）
----
-第二段：印尼文翻譯（Bahasa Indonesia）（完整內容）
-兩段之間用「---」分隔，缺一不可。
-
-【回答原則】
-- 語氣溫柔、不評判，讓使用者感到安心
-- 說明清楚，使用條列式整理複雜資訊
-- 若問題涉及具體症狀或用藥，務必提醒就醫
-- 若資料庫中有相關內容，優先根據資料庫回答
-- 每則回覆結尾必須附上免責聲明：
-⚠️ 免責聲明：本服務提供之內容僅供衛教參考，不構成醫療診斷或治療建議。如有身體不適，請務必諮詢婦產科醫師。
-⚠️ Penafian: Informasi ini hanya bersifat edukatif dan bukan pengganti saran medis. Jika ada keluhan, segera konsultasikan ke dokter kandungan.
-${dbCtx}`;
-    try {
-      const history = messages.slice(-10).map(m => ({ role: m.role === "bot" ? "assistant" : "user", content: m.text }));
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, system, messages: [...history, { role: "user", content: q }] })
-      });
-      const data = await res.json();
-      const reply = data.content?.find(b => b.type === "text")?.text || "（無回應）";
-      const t2 = nowTime();
-      setMessages(prev => [...prev, { role: "bot", text: reply, time: t2 }]);
-      // Log the experiment entry
-      const entry = {
-        id: Date.now(),
-        date: nowDate(),
-        time: t2,
-        question: q,
-        answer: reply,
-        hasDB: hasData,
-        dbCount: tables.length + notes.length,
-        dbNames: [...tables.map(x => x.name), ...notes.map(x => x.name)]
-      };
-      setExpLog(prev => [...prev, entry]);
-      // Auto-add question if not present
-      if (!questions.includes(q.trim())) setQuestions(prev => [...prev, q.trim()]);
-    } catch {
-      setMessages(prev => [...prev, { role: "bot", text: "⚠️ 連線錯誤，請稍後再試。" }]);
-    }
-    setLoading(false);
-  };
-
-  const handleKeyDown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
-
-  const currentTable = activeType === "table" ? tables.find(t => t.id === activeId) : null;
-  const currentNote  = activeType === "note"  ? notes.find(n => n.id === activeId)  : null;
-  const filteredRows = currentTable ? currentTable.rows.filter(row =>
-    Object.values(row).some(v => String(v).toLowerCase().includes(searchQ.toLowerCase()))
-  ) : [];
-
-  // ── Experiment helpers ──
-  const deleteEntry = (id) => setExpLog(prev => prev.filter(e => e.id !== id));
-  const clearAllLog = () => { setExpLog([]); showToast("已清除全部記錄", "info"); };
-  const exportCSV = () => {
-    if (!expLog.length) { showToast("目前沒有記錄可匯出", "error"); return; }
-    const rows = [["編號","日期","時間","組別","資料庫數","資料庫名稱","問題","回答"]];
-    expLog.forEach((e, i) => rows.push([i+1, e.date, e.time, e.hasDB ? "組B-有資料庫" : "組A-無資料庫", e.dbCount, e.dbNames.join("|"), e.question.replace(/\n/g," "), e.answer.replace(/\n/g," ")]));
-    const csv = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(",")).join("\n");
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-    a.download = "AI實驗記錄_" + nowDate().replace(/\//g,"-") + ".csv"; a.click();
-  };
-
-  // Group entries by question for the Q view
-  const getEntriesForQ = (q) => expLog.filter(e => e.question.trim() === q.trim());
-  const getBatchGroups = (entries) => {
-    const groups = {};
-    entries.forEach(e => {
-      const key = e.hasDB ? e.dbCount + "筆資料" : "無資料庫";
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(e);
-    });
-    return groups;
-  };
-
-  // ── Render ──
-  return (
-    <div className="app">
-      <style>{CSS}</style>
-
-      {/* Panel toggle */}
-      <button className="panel-toggle" onClick={() => setCollapsed(c => !c)} style={{ left: collapsed ? 0 : 300 }}>
-        {collapsed ? <IChevR /> : <IChevL />}
-      </button>
-
-      {/* ══ Left Panel ══ */}
-      <div className={"left-panel" + (collapsed ? " collapsed" : "")}>
-        <div className="panel-header">
-          <div className="panel-eyebrow">資料庫管理</div>
-          <h2 className="panel-h2">訓練資料 🌸</h2>
-          <p className="panel-desc">上傳檔案或輸入文字，AI 會根據資料回答問題。</p>
-        </div>
-        <div className="panel-body">
-          {/* Tabs */}
-          <div className="side-tabs">
-            {[{ k:"tables", label:"📊 表格", count: tables.length }, { k:"notes", label:"📝 文字", count: notes.length }].map(({ k, label, count }) => (
-              <button key={k} className={"side-tab" + (sideMode === k ? " active" : "")} onClick={() => setSideMode(k)}>
-                {label}
-                {count > 0 && <span style={{ background:"var(--pink-mid)", color:"white", borderRadius:20, fontSize:9, padding:"1px 6px" }}>{count}</span>}
-              </button>
-            ))}
-          </div>
-
-          {/* List header */}
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <div className="section-label">{sideMode === "tables" ? "資料表" : "文字資料"}</div>
-            <span style={{ fontSize:11, color:"var(--text-muted)", background:"var(--surface2)", border:"1px solid var(--border)", borderRadius:20, padding:"2px 8px" }}>
-              {sideMode === "tables" ? tables.length : notes.length} 筆
-            </span>
-          </div>
-
-          {/* Items */}
-          <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
-            {sideMode === "tables" && tables.length === 0 && <div className="log-empty">尚未上傳任何資料表</div>}
-            {sideMode === "tables" && tables.map((t, i) => (
-              <div key={t.id} className={"log-item" + (activeId === t.id && activeType === "table" ? " active" : "")} onClick={() => { setActiveId(t.id); setActiveType("table"); setTab("db"); }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div className="log-num">{i+1}</div>
-                  <div><div className="log-name">{t.name}</div><div className="log-sub">{t.rows.length} 筆 · {t.headers.length} 欄</div></div>
-                </div>
-                <button className="log-delete" onClick={e => { e.stopPropagation(); deleteItem(t.id,"table"); }}>×</button>
-              </div>
-            ))}
-            {sideMode === "notes" && notes.length === 0 && <div className="log-empty">尚未輸入任何文字資料</div>}
-            {sideMode === "notes" && notes.map((n, i) => (
-              <div key={n.id} className={"log-item" + (activeId === n.id && activeType === "note" ? " active" : "")} onClick={() => { setActiveId(n.id); setActiveType("note"); setTab("db"); }}>
-                <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                  <div className="log-num">{i+1}</div>
-                  <div><div className="log-name">{n.name}</div><div className="log-sub">{n.content.length} 字元</div></div>
-                </div>
-                <button className="log-delete" onClick={e => { e.stopPropagation(); deleteItem(n.id,"note"); }}>×</button>
-              </div>
-            ))}
-          </div>
-
-          <button className="btn-primary" onClick={() => fileRef.current?.click()}>
-            <IUpload />{uploading ? "上傳中..." : "上傳檔案 (CSV / JSON / TSV)"}
-          </button>
-          <button className="btn-ghost" onClick={() => setShowModal(true)}>✏️ 輸入文字資料</button>
-        </div>
-      </div>
-
-      {/* ══ Right Panel ══ */}
-      <div className="right-panel">
-
-        {/* Header */}
-        <div className="chat-header">
-          <div style={{ width:44, height:44, borderRadius:"50%", overflow:"hidden", flexShrink:0, boxShadow:"0 3px 12px rgba(214,51,132,0.25)" }}>
-            <LunaAvatar size={44} />
-          </div>
-          <div>
-            <div className="header-title">DataAI Studio</div>
-            <div className="header-sub">婦科健康知識助理 · 中文 & Bahasa Indonesia 🌸</div>
-          </div>
-          <div className="status-badge">
-            <div className="online-dot" />
-            <span>{(tables.length + notes.length) > 0 ? "已載入 " + (tables.length + notes.length) + " 筆" : "等待資料"}</span>
-          </div>
-        </div>
-
-        {/* Tab bar */}
-        <div className="tab-bar">
-          <button className={"tab-btn" + (tab === "db" ? " active" : "")} onClick={() => setTab("db")}>🗂️ 資料庫</button>
-          <button className={"tab-btn" + (tab === "chat" ? " active" : "")} onClick={() => setTab("chat")}>💬 AI 對話</button>
-          <button className={"tab-btn" + (tab === "exp" ? " active" : "")} onClick={() => setTab("exp")}>🔬 實驗記錄</button>
-        </div>
-
-        {/* ── DB Tab ── */}
-        {tab === "db" && (
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-            {currentTable && (
-              <>
-                <div className="db-toolbar">
-                  <div><div className="db-title">{currentTable.name}</div><div className="db-sub">{currentTable.rows.length} 筆 · {currentTable.headers.length} 欄</div></div>
-                  <div style={{ marginLeft:"auto", display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
-                    <div className="search-box">
-                      <ISearch />
-                      <input value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="搜尋..." />
-                      {searchQ && <button onClick={() => setSearchQ("")} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-muted)", padding:0 }}><IClose /></button>}
-                    </div>
-                    <button className="ai-btn" onClick={() => setTab("chat")}>✨ 問 AI 分析</button>
-                  </div>
-                </div>
-                <div style={{ flex:1, overflowY:"auto" }}>
-                  <table className="data-table">
-                    <thead><tr><th>#</th>{currentTable.headers.map(h => <th key={h}>{h}</th>)}</tr></thead>
-                    <tbody>
-                      {filteredRows.map((row, i) => (
-                        <tr key={i}><td>{i+1}</td>{currentTable.headers.map(h => <td key={h} title={row[h]??""}>{ row[h]??""}</td>)}</tr>
-                      ))}
-                      {filteredRows.length === 0 && <tr><td colSpan={currentTable.headers.length+1} style={{ padding:24, textAlign:"center", color:"var(--text-muted)", fontStyle:"italic" }}>查無資料</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
-            {currentNote && (
-              <>
-                <div className="db-toolbar">
-                  <div><div className="db-title">{currentNote.name}</div><div className="db-sub">{currentNote.content.length} 字元 · {currentNote.createdAt}</div></div>
-                  <button className="ai-btn" style={{ marginLeft:"auto" }} onClick={() => setTab("chat")}>✨ 問 AI 分析</button>
-                </div>
-                <div style={{ flex:1, overflowY:"auto", padding:18 }}>
-                  <div className="note-content">{currentNote.content}</div>
-                </div>
-              </>
-            )}
-            {!currentTable && !currentNote && (
-              <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", background:"linear-gradient(180deg,#fff5f8,#fff0f5)" }}>
-                <div className="drop-zone" onDrop={onDrop} onDragOver={onDragOver} onClick={() => fileRef.current?.click()}>
-                  <div style={{ fontSize:38, marginBottom:12 }}>🌸</div>
-                  <div style={{ fontFamily:"'Playfair Display',serif", fontSize:16, fontWeight:700, color:"var(--accent)", marginBottom:6 }}>拖曳或點擊上傳資料</div>
-                  <div style={{ fontSize:12, color:"var(--text-muted)", lineHeight:1.8 }}>支援：<strong>CSV、JSON、TSV</strong><br/>或點左側「輸入文字資料」貼上文字</div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Chat Tab ── */}
-        {tab === "chat" && (
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-            {(tables.length > 0 || notes.length > 0) ? (
-              <div className="ctx-bar">
-                <span style={{ fontSize:11, color:"var(--text-muted)" }}>已載入：</span>
-                {tables.map(t => <span key={t.id} className="ctx-chip table">📊 {t.name} ({t.rows.length}筆)</span>)}
-                {notes.map(n => <span key={n.id} className="ctx-chip note">📝 {n.name}</span>)}
-              </div>
-            ) : (
-              <div className="ctx-bar"><span className="ctx-empty">⚠️ 資料庫為空，請先上傳資料或輸入文字</span></div>
-            )}
-            <div className="messages">
-              {messages.map((msg, i) => (
-                <div key={i} className={"message " + msg.role}>
-                  <div className="msg-av">
-                    {msg.role === "bot" ? <LunaSmall /> : "👤"}
-                  </div>
-                  <div className="bubble-wrap">
-                    <div className="sender">{msg.role === "bot" ? "Luna" : "你 / Kamu"}{msg.time && <span className="msg-time">{msg.time}</span>}</div>
-                    <div className="bubble">{
-                      msg.role === "bot" ? (() => {
-                        const parts = msg.text.split(/\n---\n|\n---$/);
-                        if (parts.length >= 2) {
-                          const zh = parts[0].trim();
-                          const id = parts.slice(1).join("\n---\n").trim();
-                          return <>
-                            <div style={{background:"#fff5f8",border:"1px solid #f9c6da",borderRadius:10,padding:"9px 12px",marginBottom:7}}>
-                              <div style={{fontSize:10,fontWeight:700,color:"#c2185b",marginBottom:5,letterSpacing:"0.06em"}}>🇹🇼 繁體中文</div>
-                              <div style={{whiteSpace:"pre-wrap",fontSize:13,lineHeight:1.75}}>{zh}</div>
-                            </div>
-                            <div style={{background:"#fff8f0",border:"1px solid #ffd6a0",borderRadius:10,padding:"9px 12px"}}>
-                              <div style={{fontSize:10,fontWeight:700,color:"#e65100",marginBottom:5,letterSpacing:"0.06em"}}>🇮🇩 Bahasa Indonesia</div>
-                              <div style={{whiteSpace:"pre-wrap",fontSize:13,lineHeight:1.75}}>{id}</div>
-                            </div>
-                          </>;
-                        }
-                        return <div style={{whiteSpace:"pre-wrap"}}>{msg.text}</div>;
-                      })()
-                      : <div style={{whiteSpace:"pre-wrap"}}>{msg.text}</div>
-                    }</div>
-                  </div>
-                </div>
-              ))}
-              {loading && (
-                <div className="message bot">
-                  <div className="msg-av"><LunaSmall /></div>
-                  <div className="bubble-wrap">
-                    <div className="sender">AI 助手</div>
-                    <div className="bubble"><div className="typing"><span/><span/><span/></div></div>
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-            <div className="input-area">
-              <textarea className="chat-textarea" value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={handleKeyDown}
-                placeholder="詢問婦科健康問題 / Tanya masalah kesehatan wanita 🌸 (Enter 送出)"
-                rows={1} onInput={e => { e.target.style.height="auto"; e.target.style.height=Math.min(e.target.scrollHeight,100)+"px"; }} />
-              <button className="send-btn" onClick={sendMessage} disabled={loading || !chatInput.trim()}>
-                <ISend />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Experiment Tab ── */}
-        {tab === "exp" && (
-          <div className="exp-panel">
-            {/* Header row */}
-            <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
-              <div>
-                <div style={{ fontFamily:"'Playfair Display',serif", fontSize:18, fontWeight:700, color:"var(--text)" }}>實驗對照記錄 🔬</div>
-                <div style={{ fontSize:12, color:"var(--text-muted)", marginTop:2 }}>依問題分類查看不同資料庫筆數的回答差異</div>
-              </div>
-              <div style={{ display:"flex", gap:6 }}>
-                <button className="export-btn" onClick={exportCSV}>⬇ 匯出 CSV</button>
-                <button className="export-btn red" onClick={clearAllLog}>🗑 清除全部</button>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="exp-stats">
-              <div className="stat-card">
-                <div className="stat-label">總對話數</div>
-                <div className="stat-value">{expLog.length}</div>
-                <div className="stat-sub">則問答</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">無資料庫</div>
-                <div className="stat-value" style={{ color:"#e65100" }}>{expLog.filter(e => !e.hasDB).length}</div>
-                <div className="stat-sub">組 A 對照組</div>
-              </div>
-              <div className="stat-card">
-                <div className="stat-label">有資料庫</div>
-                <div className="stat-value" style={{ color:"#2e7d32" }}>{expLog.filter(e => e.hasDB).length}</div>
-                <div className="stat-sub">組 B 實驗組</div>
-              </div>
-            </div>
-
-            {/* Sub-tab toggle */}
-            <div className="exp-sub-tabs">
-              <button className={"exp-sub-tab" + (expView === "q" ? " active" : "")} onClick={() => setExpView("q")}>📋 依問題分類</button>
-              <button className={"exp-sub-tab" + (expView === "time" ? " active" : "")} onClick={() => setExpView("time")}>🕐 依時間排序</button>
-            </div>
-
-            {/* ── Q View ── */}
-            {expView === "q" && (
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                <div className="add-q-row">
-                  <input className="add-q-input" value={newQ} onChange={e => setNewQ(e.target.value)}
-                    placeholder="新增問題分類（如：資料趨勢分析）" maxLength={80}
-                    onKeyDown={e => { if (e.key === "Enter") { if (newQ.trim() && !questions.includes(newQ.trim())) { setQuestions(prev => [...prev, newQ.trim()]); } setNewQ(""); } }} />
-                  <button className="add-q-btn" onClick={() => { if (newQ.trim() && !questions.includes(newQ.trim())) { setQuestions(prev => [...prev, newQ.trim()]); } setNewQ(""); }}>
-                    <IPlus />新增
-                  </button>
-                </div>
-
-                {questions.length === 0 && <div className="exp-empty">尚未建立任何問題分類 🌸</div>}
-
-                {questions.map((q, qi) => {
-                  const entries = getEntriesForQ(q);
-                  const groups = getBatchGroups(entries);
-                  const groupKeys = Object.keys(groups).sort((a,b) => { if (a==="無資料庫") return -1; if (b==="無資料庫") return 1; return parseInt(a)-parseInt(b); });
-                  const isOpen = openQ === qi;
-                  const activeKey = activeBatchTab[qi] || groupKeys[0];
-                  const activeEntries = groups[activeKey] || [];
-
-                  return (
-                    <div key={qi} className={"q-item" + (isOpen ? " open" : "")}>
-                      <div className="q-item-header" onClick={() => setOpenQ(isOpen ? null : qi)}>
-                        <span className="q-text">{q}</span>
-                        <span className="q-count">{entries.length} 筆記錄</span>
-                        <span className="q-arrow">▼</span>
-                        <button className="q-delete" onClick={e => { e.stopPropagation(); setQuestions(prev => prev.filter((_,i) => i !== qi)); if (openQ === qi) setOpenQ(null); }}>×</button>
-                      </div>
-                      {isOpen && (
-                        <div className="q-detail">
-                          {groupKeys.length === 0 ? (
-                            <div style={{ padding:"12px 0", fontSize:13, color:"var(--text-muted)", fontStyle:"italic" }}>
-                              尚未有這個問題的記錄，在 AI 對話中提問後會自動歸類到這裡 🌸
-                            </div>
-                          ) : (
-                            <>
-                              <div className="batch-tabs">
-                                {groupKeys.map(k => (
-                                  <button key={k} className={"batch-tab" + (k === "無資料庫" ? " no-db" : "") + (k === activeKey ? " active" : "")}
-                                    onClick={() => setActiveBatchTab(prev => ({ ...prev, [qi]: k }))}>
-                                    {k === "無資料庫" ? "⭕ 無資料庫" : "✅ " + k}
-                                  </button>
-                                ))}
-                              </div>
-                              {activeEntries.slice().reverse().map(e => (
-                                <div key={e.id} className="batch-answer">
-                                  <div className="batch-meta">
-                                    <span>🕐 {e.date} {e.time}</span>
-                                    {e.hasDB && <span>資料庫：{e.dbNames.join("、")}</span>}
-                                  </div>
-                                  {e.answer}
-                                </div>
-                              ))}
-                            </>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* ── Time View ── */}
-            {expView === "time" && (
-              <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {expLog.length === 0 && <div className="exp-empty">尚無對話記錄 — 開始與 AI 對話後會自動記錄於此 🌸</div>}
-                {(() => {
-                  const grouped = {};
-                  [...expLog].reverse().forEach(e => { if (!grouped[e.date]) grouped[e.date] = []; grouped[e.date].push(e); });
-                  return Object.entries(grouped).map(([date, entries]) => (
-                    <div key={date} className="date-group">
-                      <div className="date-label">📅 {date}</div>
-                      {entries.map(e => (
-                        <div key={e.id} className="exp-entry">
-                          <div className="exp-entry-header">
-                            <span className={"exp-tag " + (e.hasDB ? "tag-withdb" : "tag-nodb")}>
-                              {e.hasDB ? "✅ 組B：" + e.dbCount + "筆" : "⭕ 組A：無資料庫"}
-                            </span>
-                            {e.hasDB && <span style={{ fontSize:11, color:"var(--text-muted)" }}>{e.dbNames.join("、")}</span>}
-                            <span className="exp-time-lbl">{e.time}</span>
-                            <button className="entry-del" onClick={() => deleteEntry(e.id)} title="刪除">🗑</button>
-                          </div>
-                          <div className="exp-q"><strong>問：</strong>{e.question}</div>
-                          <div className="exp-a-label">AI 回答</div>
-                          <div className="exp-a">{e.answer}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ));
-                })()}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* ── Text Modal ── */}
-      {showModal && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div className="modal-title">輸入文字資料 ✏️</div>
-              <button onClick={() => setShowModal(false)} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-muted)", fontSize:18 }}>×</button>
-            </div>
-            <p style={{ fontSize:12, color:"var(--text-muted)", lineHeight:1.6 }}>可貼上文章、報告、筆記、會議記錄等，AI 會讀取並分析內容。</p>
-            <div>
-              <div className="field-label">資料名稱（選填）</div>
-              <input value={textTitle} onChange={e => setTextTitle(e.target.value)} placeholder="例：會議紀錄、產品說明…" />
-            </div>
-            <div>
-              <div className="field-label">文字內容 *</div>
-              <textarea value={textBody} onChange={e => setTextBody(e.target.value)} placeholder="在此貼上或輸入文字內容…" rows={8} />
-              <div className="char-count">{textBody.length} 字元</div>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-ghost" onClick={() => setShowModal(false)}>取消</button>
-              <button className="btn-primary" onClick={saveNote}><ICheck />儲存到資料庫</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <input ref={fileRef} type="file" multiple accept=".csv,.json,.tsv" style={{ display:"none" }}
-        onChange={e => { handleFiles([...e.target.files]); e.target.value = ""; }} />
-
-      {toast && <div className={"toast toast-" + toast.type}>{toast.msg}</div>}
-    </div>
-  );
-}  }
-
-  /* LEFT PANEL */
-  #left-panel {
-    width: 360px;
-    min-width: 300px;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Luna — 婦科健康知識助理</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+
+  :root {
+    --bg: #fff0f5;
+    --surface: #fff5f8;
+    --surface2: #ffe8f0;
+    --border: #f4c6d8;
+    --accent: #d63384;
+    --accent-soft: #e8779a;
+    --accent-light: #ffe0ec;
+    --pink-deep: #c2185b;
+    --pink-pale: #fce4ec;
+    --pink-mid: #f48fb1;
+    --text: #2d1b26;
+    --text-mid: #6b3a52;
+    --text-muted: #b07090;
+    --radius: 18px;
+    --shadow: 0 4px 24px rgba(180,60,100,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 720px;
+    height: min(90vh, 820px);
     background: var(--surface);
-    border-right: 1.5px solid var(--border);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    border: 1.5px solid var(--border);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: width 0.35s cubic-bezier(0.4,0,0.2,1), min-width 0.35s cubic-bezier(0.4,0,0.2,1);
-  }
-  #left-panel.collapsed {
-    width: 0;
-    min-width: 0;
-    border-right: none;
-  }
-  #left-panel.collapsed > * {
-    opacity: 0;
-    pointer-events: none;
   }
 
-  /* Toggle button */
-  #toggle-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    left: 360px;
-    z-index: 100;
-    width: 22px; height: 48px;
-    background: var(--accent);
-    border: none;
-    border-radius: 0 12px 12px 0;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 2px 0 10px rgba(214,51,132,0.25);
-    transition: left 0.35s cubic-bezier(0.4,0,0.2,1), background 0.2s;
-  }
-  #toggle-btn:hover { background: var(--pink-deep); }
-  #toggle-btn svg {
-    width: 12px; height: 12px; fill: white;
-    transition: transform 0.35s;
-  }
-  #toggle-btn.collapsed-btn {
-    left: 0;
-  }
-  #toggle-btn.collapsed-btn svg {
-    transform: rotate(180deg);
-  }
-  .panel-header {
-    padding: 22px 22px 15px;
-    border-bottom: 1px solid var(--border);
+  /* ── Header ── */
+  .header {
+    padding: 16px 22px;
     background: linear-gradient(135deg, #ffe4ef 0%, #ffd6e7 100%);
-  }
-  .panel-header .eyebrow {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.16em; color: var(--accent);
-    text-transform: uppercase; margin-bottom: 5px;
-  }
-  .panel-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 19px; font-weight: 700;
-    color: var(--text); line-height: 1.3;
-  }
-  .panel-header p {
-    margin-top: 5px; font-size: 12px;
-    color: var(--text-mid); line-height: 1.6;
-  }
-  .panel-body {
-    flex: 1; overflow-y: auto;
-    padding: 16px;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .panel-body::-webkit-scrollbar { width: 4px; }
-  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-  .batch-label input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 10px;
-    color: var(--text); font-family: 'DM Sans', sans-serif;
-    font-size: 13px; padding: 8px 12px; outline: none;
-    transition: border-color 0.2s;
-  }
-  .batch-label input:focus { border-color: var(--accent-soft); }
-  .batch-label input::placeholder { color: var(--text-muted); }
-
-  #knowledge-input {
-    resize: none;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius); color: var(--text);
-    font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-    font-size: 13px; line-height: 1.7;
-    padding: 12px 14px; outline: none;
-    transition: border-color 0.2s; min-height: 120px;
-  }
-  #knowledge-input:focus { border-color: var(--accent-soft); }
-  #knowledge-input::placeholder { color: var(--text-muted); }
-
-  .btn-row { display: flex; gap: 8px; }
-  .btn-primary {
-    flex: 1;
-    background: linear-gradient(135deg, var(--accent-soft), var(--accent));
-    color: white; border: none; border-radius: 12px;
-    padding: 10px 16px; font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    box-shadow: 0 2px 8px rgba(214,51,132,0.25);
-  }
-  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-  .btn-secondary {
-    background: transparent; color: var(--accent);
-    border: 1.5px solid var(--accent); border-radius: 12px;
-    padding: 10px 14px; font-family: 'DM Sans', sans-serif;
-    font-size: 12px; cursor: pointer; transition: background 0.2s;
-  }
-  .btn-secondary:hover { background: var(--accent-light); }
-
-  .section-header {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-top: 4px;
-  }
-  .section-title {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.12em; color: var(--accent);
-    text-transform: uppercase;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .section-title::before {
-    content: ''; display: inline-block;
-    width: 3px; height: 12px;
-    background: var(--accent); border-radius: 2px;
-  }
-  .db-count {
-    font-size: 11px; color: var(--text-muted);
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 20px; padding: 2px 8px;
-  }
-
-  #training-log { display: flex; flex-direction: column; gap: 7px; }
-  .log-item {
-    background: white; border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px 13px;
-    display: flex; align-items: center;
-    justify-content: space-between;
-    animation: slideIn 0.25s ease;
-    box-shadow: 0 1px 4px rgba(200,60,100,0.05);
-  }
-  @keyframes slideIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
-  .log-item-left { display: flex; align-items: center; gap: 10px; }
-  .log-num {
-    width: 22px; height: 22px; border-radius: 6px;
-    background: var(--pink-pale); color: var(--accent);
-    font-size: 11px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
-  .log-name { font-size: 13px; font-weight: 500; color: var(--text); }
-  .log-chars { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
-  .log-delete {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 16px; line-height: 1;
-    padding: 2px 6px; border-radius: 6px;
-    transition: color 0.2s, background 0.2s;
-  }
-  .log-delete:hover { color: #c0392b; background: #fde8e8; }
-  .log-empty {
-    font-size: 12.5px; color: var(--text-muted);
-    text-align: center; padding: 18px 0; font-style: italic;
-  }
-
-  .total-badge {
-    background: var(--pink-pale); border: 1px solid var(--pink-mid);
-    color: var(--pink-deep); border-radius: 10px;
-    padding: 8px 14px; font-size: 12px; font-weight: 500;
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  .activate-btn {
-    background: linear-gradient(135deg, #f48fb1, var(--pink-deep));
-    color: white; border: none; border-radius: 14px;
-    padding: 13px 16px; font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    transition: opacity 0.2s, transform 0.15s;
-    box-shadow: 0 4px 14px rgba(194,24,91,0.3);
-    letter-spacing: 0.03em;
-  }
-  .activate-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-
-  /* RIGHT PANEL */
-  #right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  #chat-header {
-    padding: 16px 24px;
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; gap: 14px;
-    background: var(--surface); box-shadow: var(--shadow);
-  }
-  .luna-avatar {
-    width: 44px; height: 44px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 14px rgba(214,51,132,0.3);
+    display: flex;
+    align-items: center;
+    gap: 13px;
     flex-shrink: 0;
+  }
+  .header-avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
     overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 3px 12px rgba(214,51,132,0.28);
   }
-  .header-info h3 {
+  .header-title {
     font-family: 'Playfair Display', serif;
-    font-size: 17px; font-weight: 700; color: var(--text);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
   }
-  .header-info .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
-  .lang-badge {
-    margin-left: auto; display: flex; align-items: center; gap: 6px;
-    background: var(--pink-pale); border: 1px solid var(--border);
-    border-radius: 20px; padding: 5px 12px;
-    font-size: 11px; color: var(--pink-deep); font-weight: 500;
+  .header-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 1px;
   }
-  .online-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: #e91e8c; animation: pulse 2s infinite;
+  .header-badge {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--pink-deep);
+    font-weight: 500;
   }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e91e8c;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
+  /* ── Messages ── */
   #messages {
-    flex: 1; overflow-y: auto;
-    padding: 22px 26px;
-    display: flex; flex-direction: column; gap: 18px;
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     background: linear-gradient(180deg, #fff5f8 0%, #fff0f5 100%);
   }
   #messages::-webkit-scrollbar { width: 4px; }
   #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   .message {
-    display: flex; gap: 10px; max-width: 82%;
+    display: flex;
+    gap: 9px;
+    max-width: 82%;
     animation: fadeUp 0.28s ease;
   }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:translateY(0)} }
   .message.user { align-self: flex-end; flex-direction: row-reverse; }
-  .message.bot { align-self: flex-start; }
+  .message.bot  { align-self: flex-start; }
 
-  .msg-avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    flex-shrink: 0; display: flex; align-items: center;
-    justify-content: center; font-size: 17px; margin-top: 4px;
-  }
-  .message.bot .msg-avatar {
-    background: linear-gradient(135deg, #f8bbd9, #d63384);
-    box-shadow: 0 2px 8px rgba(214,51,132,0.25);
+  .msg-av {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+    font-size: 16px;
     overflow: hidden;
   }
-  .message.user .msg-avatar {
-    background: var(--user-bubble); border: 1px solid var(--border);
+  .message.bot .msg-av {
+    box-shadow: 0 2px 8px rgba(214,51,132,0.25);
   }
-  .bubble-wrap { display: flex; flex-direction: column; gap: 4px; }
-  .sender-name { font-size: 11px; color: var(--text-muted); padding: 0 4px; }
-  .msg-time { font-size: 10px; color: var(--text-muted); opacity: 0.7; margin-left: 4px; }
-  .message.user .sender-name { text-align: right; }
+  .message.user .msg-av {
+    background: var(--pink-pale);
+    border: 1px solid var(--border);
+  }
+
+  .bubble-wrap { display: flex; flex-direction: column; gap: 3px; }
+  .sender { font-size: 10px; color: var(--text-muted); padding: 0 4px; }
+  .msg-time { font-size: 9px; color: var(--text-muted); opacity: 0.7; margin-left: 4px; }
+  .message.user .sender { text-align: right; }
 
   .bubble {
-    padding: 12px 16px; font-size: 14px; line-height: 1.8;
-    box-shadow: 0 1px 6px rgba(180,60,100,0.07);
+    padding: 11px 15px;
+    font-size: 14px;
+    line-height: 1.78;
     border-radius: var(--radius);
+    box-shadow: 0 1px 6px rgba(180,60,100,0.07);
+    white-space: pre-wrap;
+    word-break: break-word;
   }
   .message.bot .bubble {
-    background: var(--luna-bubble);
+    background: #fff0f6;
     border: 1px solid #f9c6da;
-    border-top-left-radius: 4px; color: var(--text);
+    border-top-left-radius: 4px;
+    color: var(--text);
   }
   .message.user .bubble {
-    background: white; border: 1px solid var(--border);
-    border-top-right-radius: 4px; color: var(--text);
+    background: white;
+    border: 1px solid var(--border);
+    border-top-right-radius: 4px;
+    color: var(--text);
   }
 
-  /* Bilingual divider */
-  .lang-divider {
-    display: flex; align-items: center; gap: 8px;
-    margin: 10px 0 8px;
-  }
-  .lang-divider::before, .lang-divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
-  }
-  .lang-divider span {
-    font-size: 10px; letter-spacing: 0.1em;
-    color: var(--accent); font-weight: 600; text-transform: uppercase;
-    opacity: 0.7;
-  }
-  .zh-section { color: var(--text); }
-  .id-section { color: var(--text-mid); }
-
-  .typing-indicator { display: flex; gap: 5px; padding: 4px 2px; }
-  .typing-indicator span {
+  /* ── Typing indicator ── */
+  .typing { display: flex; gap: 5px; padding: 4px 2px; }
+  .typing span {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--accent-soft); animation: bounce 1.2s infinite;
+    background: var(--accent-soft);
+    animation: bounce 1.2s infinite;
   }
-  .typing-indicator span:nth-child(2){animation-delay:0.2s}
-  .typing-indicator span:nth-child(3){animation-delay:0.4s}
-  @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
 
-  .system-msg {
-    align-self: center; font-size: 12px; color: var(--text-muted);
-    background: white; border: 1px solid var(--border);
-    border-radius: 20px; padding: 6px 16px;
-    box-shadow: 0 1px 4px rgba(200,60,100,0.06);
+  /* ── Error message ── */
+  .error-msg {
+    align-self: center;
+    font-size: 12px;
+    color: #c62828;
+    background: #fde8e8;
+    border: 1px solid #ef9a9a;
+    border-radius: 20px;
+    padding: 6px 16px;
   }
 
-  #input-area {
-    padding: 14px 22px; border-top: 1px solid var(--border);
+  /* ── Input area ── */
+  .input-area {
+    padding: 13px 18px;
+    border-top: 1px solid var(--border);
     background: var(--surface);
-    display: flex; gap: 10px; align-items: flex-end;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    flex-shrink: 0;
   }
   #user-input {
-    flex: 1; background: white;
-    border: 1.5px solid var(--border); border-radius: 16px;
-    color: var(--text); font-family: 'DM Sans', 'Noto Sans TC', sans-serif;
-    font-size: 14px; padding: 11px 16px; resize: none;
-    outline: none; max-height: 110px; line-height: 1.6;
+    flex: 1;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 15px;
+    resize: none;
+    outline: none;
+    max-height: 110px;
+    line-height: 1.6;
     transition: border-color 0.2s;
   }
   #user-input:focus { border-color: var(--accent-soft); }
   #user-input::placeholder { color: var(--text-muted); }
+
   #send-btn {
     background: linear-gradient(135deg, var(--accent-soft), var(--accent));
-    border: none; border-radius: 14px;
-    width: 46px; height: 46px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+    border: none;
+    border-radius: 14px;
+    width: 46px;
+    height: 46px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     transition: opacity 0.2s, transform 0.15s;
     box-shadow: 0 3px 12px rgba(214,51,132,0.3);
   }
-  #send-btn:hover { opacity: 0.88; transform: scale(1.05); }
-  #send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
+  #send-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.05); }
+  #send-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
   #send-btn svg { width: 20px; height: 20px; fill: white; }
 
-  /* ===== TAB SWITCHER ===== */
-  .tab-bar {
-    display: flex; gap: 4px;
-    padding: 10px 24px 0;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
+  /* ── Bilingual blocks ── */
+  .lang-block {
+    border-radius: 12px;
+    padding: 11px 13px;
+    margin-bottom: 8px;
   }
-  .tab-btn {
-    padding: 8px 18px; font-size: 13px; font-weight: 500;
-    border: none; background: transparent; cursor: pointer;
-    color: var(--text-muted); border-radius: 10px 10px 0 0;
-    border-bottom: 2.5px solid transparent;
-    font-family: 'DM Sans', sans-serif;
-    transition: color 0.2s, border-color 0.2s, background 0.2s;
+  .lang-block:last-child { margin-bottom: 0; }
+  .zh-block {
+    background: #fff5f8;
+    border: 1px solid #f9c6da;
   }
-  .tab-btn:hover { color: var(--accent); background: var(--accent-light); }
-  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-
-  /* ===== EXPERIMENT LOG PANEL ===== */
-  #exp-panel {
-    flex: 1; overflow-y: auto;
-    padding: 24px 28px;
-    background: linear-gradient(180deg, #fff5f8 0%, #fff0f5 100%);
-    display: none; flex-direction: column; gap: 16px;
+  .id-block {
+    background: #fff8f0;
+    border: 1px solid #ffd6a0;
   }
-  #exp-panel.active { display: flex; }
-
-  .exp-header-row {
-    display: flex; align-items: center; justify-content: space-between;
+  .lang-tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.75;
   }
-  .exp-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 18px; font-weight: 700; color: var(--text);
+  .zh-block .lang-tag { color: #c2185b; }
+  .id-block .lang-tag { color: #e65100; }
+  .lang-text {
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
   }
-  .exp-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-  .export-btn {
-    background: var(--accent); color: white; border: none;
-    border-radius: 10px; padding: 8px 16px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    display: flex; align-items: center; gap: 6px;
-    transition: opacity 0.2s;
+  /* Override bubble padding when bilingual */
+  .message.bot .bubble {
+    padding: 12px 13px;
   }
-  .export-btn:hover { opacity: 0.85; }
-
-  .exp-stats {
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-  }
-  .stat-card {
-    background: white; border: 1px solid var(--border);
-    border-radius: 14px; padding: 14px 16px;
-    box-shadow: 0 1px 6px rgba(200,60,100,0.06);
-  }
-  .stat-label { font-size: 11px; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; }
-  .stat-value { font-size: 24px; font-weight: 700; color: var(--accent); margin-top: 4px; font-family: 'Playfair Display', serif; }
-  .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-  .exp-section-title {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
-    color: var(--accent); text-transform: uppercase;
-    display: flex; align-items: center; gap: 6px; margin-top: 8px;
-  }
-  .exp-section-title::before {
-    content: ''; width: 3px; height: 12px;
-    background: var(--accent); border-radius: 2px; display: inline-block;
-  }
-
-  .exp-entry {
-    background: white; border: 1px solid var(--border);
-    border-radius: 14px; padding: 14px 16px;
-    box-shadow: 0 1px 6px rgba(200,60,100,0.05);
-    animation: slideIn 0.2s ease;
-  }
-  .exp-entry-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-  .exp-tag {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
-    padding: 3px 9px; border-radius: 20px; text-transform: uppercase;
-  }
-  .tag-no-db { background: #fff3e0; color: #e65100; border: 1px solid #ffcc80; }
-  .tag-with-db { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
-  .exp-batch-info { font-size: 11px; color: var(--text-muted); }
-  .exp-time { font-size: 11px; color: var(--text-muted); margin-left: auto; }
-
-  .exp-q { font-size: 13px; color: var(--text-mid); margin-bottom: 6px; }
-  .exp-q strong { color: var(--text); font-weight: 600; }
-  .exp-a { font-size: 13px; color: var(--text); line-height: 1.7; }
-  .exp-a-label { font-size: 10px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
-
-  .exp-empty {
-    text-align: center; padding: 48px 0;
-    color: var(--text-muted); font-size: 14px; font-style: italic;
-  }
-  .exp-date-group { display: flex; flex-direction: column; gap: 8px; }
-  .exp-date-label {
-    font-size: 12px; font-weight: 600; color: var(--text-mid);
-    background: var(--pink-pale); border: 1px solid var(--border);
-    border-radius: 20px; padding: 4px 14px;
-    align-self: flex-start; margin-bottom: 2px;
-  }
-  .entry-delete-btn {
-    background: none; border: none; cursor: pointer;
-    font-size: 14px; padding: 2px 6px; border-radius: 6px;
-    transition: background 0.2s; margin-left: auto;
-    line-height: 1;
-  }
-  .entry-delete-btn:hover { background: #fde8e8; }
-
-  /* ===== QUESTION CATEGORY STYLES ===== */
-  .exp-view { display: flex; flex-direction: column; gap: 14px; }
-
-  /* Sub-tabs inside exp panel */
-  .exp-sub-tabs {
-    display: flex; gap: 6px; flex-wrap: wrap;
-  }
-  .exp-sub-tab {
-    padding: 6px 14px; font-size: 12px; font-weight: 500;
-    border: 1.5px solid var(--border); border-radius: 20px;
-    background: white; color: var(--text-mid); cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
-  }
-  .exp-sub-tab:hover { border-color: var(--accent-soft); color: var(--accent); }
-  .exp-sub-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-  /* Question list */
-  .q-list { display: flex; flex-direction: column; gap: 8px; }
-  .q-item {
-    background: white; border: 1.5px solid var(--border);
-    border-radius: 14px; cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    overflow: hidden;
-  }
-  .q-item:hover { border-color: var(--accent-soft); box-shadow: 0 2px 10px rgba(214,51,132,0.1); }
-  .q-item.open { border-color: var(--accent); }
-  .q-item-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px;
-  }
-  .q-item-header .q-text {
-    flex: 1; font-size: 13px; font-weight: 500; color: var(--text);
-  }
-  .q-count {
-    font-size: 11px; color: var(--text-muted);
-    background: var(--surface2); border-radius: 20px;
-    padding: 2px 8px; white-space: nowrap;
-  }
-  .q-arrow {
-    font-size: 11px; color: var(--text-muted);
-    transition: transform 0.2s;
-  }
-  .q-item.open .q-arrow { transform: rotate(180deg); }
-  .q-item-delete {
-    background: none; border: none; cursor: pointer;
-    color: var(--text-muted); font-size: 14px; padding: 2px 6px;
-    border-radius: 6px; transition: color 0.2s, background 0.2s;
-  }
-  .q-item-delete:hover { color: #c0392b; background: #fde8e8; }
-
-  /* Batch tabs inside question */
-  .q-detail { padding: 0 16px 14px; border-top: 1px solid var(--border); }
-  .batch-tabs {
-    display: flex; gap: 6px; flex-wrap: wrap;
-    padding: 10px 0 8px;
-  }
-  .batch-tab {
-    padding: 4px 12px; font-size: 11px; font-weight: 600;
-    border: 1.5px solid var(--border); border-radius: 20px;
-    background: white; color: var(--text-mid); cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: all 0.2s;
-  }
-  .batch-tab:hover { border-color: var(--accent-soft); }
-  .batch-tab.active { background: var(--pink-pale); color: var(--pink-deep); border-color: var(--pink-mid); }
-  .batch-tab.no-db { background: #fff3e0; color: #e65100; border-color: #ffcc80; }
-
-  .batch-answer {
-    background: var(--surface2); border-radius: 12px;
-    padding: 12px 14px; font-size: 13px; line-height: 1.75;
-    color: var(--text); border: 1px solid var(--border);
-  }
-  .batch-answer-meta {
-    font-size: 10px; color: var(--text-muted);
-    margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap;
-  }
-
-  /* Add question row */
-  .add-q-row {
-    display: flex; gap: 8px;
-  }
-  .add-q-row input {
-    flex: 1; background: white; border: 1.5px solid var(--border);
-    border-radius: 12px; color: var(--text);
-    font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 9px 14px; outline: none; transition: border-color 0.2s;
-  }
-  .add-q-row input:focus { border-color: var(--accent-soft); }
-  .add-q-row input::placeholder { color: var(--text-muted); }
-  .add-q-btn {
-    background: var(--accent); color: white; border: none;
-    border-radius: 12px; padding: 9px 16px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: opacity 0.2s; white-space: nowrap;
-  }
-  .add-q-btn:hover { opacity: 0.85; }
-
-  /* 匯出/匯入資料庫 */
-  .db-io-row {
-    display: flex; gap: 8px; padding: 0 16px 16px;
-  }
-  .db-io-btn {
-    flex: 1; border: none; border-radius: 10px;
-    padding: 8px 10px; font-size: 12px; font-weight: 600;
-    cursor: pointer; font-family: 'DM Sans', sans-serif;
-    transition: opacity 0.2s;
-  }
-  .db-io-btn.export { background: var(--surface2); color: var(--accent); border: 1.5px solid var(--border); }
-  .db-io-btn.import { background: var(--accent-light); color: var(--pink-deep); border: 1.5px solid var(--pink-mid); }
-  .db-io-btn:hover { opacity: 0.8; }
-
-  #right-panel {
-    flex: 1; display: flex; flex-direction: column; overflow: hidden;
-  }
-  #chat-view {
-    flex: 1; display: flex; flex-direction: column; overflow: hidden;
-  }
-  #exp-panel {
-    flex: 1; overflow-y: auto;
-    padding: 24px 28px;
-    background: linear-gradient(180deg, #fff5f8 0%, #fff0f5 100%);
-    flex-direction: column; gap: 16px;
-    display: none;
-  }
-  #exp-panel.active { display: flex; }
-
-  .api-section {
-    border-bottom: 1px solid var(--border);
-    padding: 14px 16px; background: #fff8fb;
-  }
-  .api-label {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
-  }
-  .api-row { display: flex; gap: 8px; align-items: center; }
-  .api-input-wrap { flex: 1; position: relative; }
-  .api-input-wrap input {
-    width: 100%; background: var(--surface2);
-    border: 1.5px solid var(--border); border-radius: 10px;
-    color: var(--text); font-family: monospace; font-size: 12px;
-    padding: 8px 36px 8px 12px; outline: none;
-    transition: border-color 0.2s;
-  }
-  .api-input-wrap input:focus { border-color: var(--accent-soft); }
-  .api-input-wrap input::placeholder { color: var(--text-muted); font-family: 'DM Sans', sans-serif; }
-  .api-eye-btn {
-    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 14px;
-  }
-  .api-eye-btn:hover { color: var(--accent); }
-  .api-save-btn {
-    background: var(--accent); color: white; border: none;
-    border-radius: 10px; padding: 8px 14px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: 'DM Sans', sans-serif; transition: opacity 0.2s;
-  }
-  .api-save-btn:hover { opacity: 0.85; }
-  .api-status {
-    font-size: 11px; margin-top: 6px;
-    display: flex; align-items: center; gap: 5px;
-  }
-  .api-dot { width: 6px; height: 6px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
-  .api-status.ok .api-dot { background: #66bb6a; }
-  .api-status.ok .api-status-text { color: #2e7d32; font-weight: 500; }
-  .api-status.empty .api-status-text { color: var(--text-muted); }
 </style>
 </head>
 <body>
 
-<button id="toggle-btn" onclick="togglePanel()" title="收合/展開資料庫">
-  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15 18l-6-6 6-6"/></svg>
-</button>
+<div class="card">
 
-<div id="left-panel">
-
-  <div class="panel-header">
-    <div class="eyebrow">知識庫管理</div>
-    <h2>訓練 Luna 🌸</h2>
-    <p>分批加入資料，Luna 以中文＋印尼文雙語回應，支援三種語言輸入。</p>
-  </div>
-
-  <div class="panel-body">
-    <div class="batch-label">
-      <input type="text" id="batch-name" placeholder="資料名稱（如：心理機制說明）" maxlength="40"/>
-    </div>
-
-    <textarea id="knowledge-input" placeholder="貼上這批資料內容...
-
-可分批輸入：心理機制、醫療知識、研究背景..."></textarea>
-
-    <div class="btn-row">
-      <button class="btn-primary" onclick="addBatch()">＋ 加入資料庫</button>
-      <button class="btn-secondary" onclick="clearAll()">清除全部</button>
-    </div>
-    <button class="btn-secondary" onclick="cleanEmptyBatches()" style="width:100%;margin-top:4px;font-size:12px;">🧹 清除空資料</button>
-
-    <div id="total-badge" class="total-badge" style="display:none">
-      <span>🗂️</span>
-      <span id="total-text"></span>
-    </div>
-
-    <div class="section-header">
-      <div class="section-title">訓練資料庫</div>
-      <div class="db-count" id="db-count">0 筆</div>
-    </div>
-
-    <div id="training-log">
-      <div class="log-empty">尚未加入任何資料</div>
-    </div>
-
-    <button class="activate-btn" id="activate-btn" onclick="activateLuna()" style="display:none">
-      🌙 啟動 Luna
-    </button>
-  </div>
-</div>
-
-<div id="right-panel">
-  <div id="chat-header">
-    <div class="luna-avatar">
-      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="22" cy="22" r="22" fill="url(#hgrad)"/>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-avatar">
+      <!-- Luna SVG Avatar -->
+      <svg width="46" height="46" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="22" cy="22" r="22" fill="url(#hg)"/>
         <defs>
-          <radialGradient id="hgrad" cx="50%" cy="40%" r="60%">
+          <radialGradient id="hg" cx="50%" cy="40%" r="60%">
             <stop offset="0%" stop-color="#ffd6e8"/>
             <stop offset="100%" stop-color="#e8779a"/>
           </radialGradient>
@@ -1757,663 +324,78 @@ ${dbCtx}`;
         <circle cx="29" cy="13" r="0.7" fill="#ff6fa8"/>
       </svg>
     </div>
-    <div class="header-info">
-      <h3>Luna</h3>
-      <div class="subtitle">Sahabat Kesehatan · 健康小夥伴</div>
+    <div>
+      <div class="header-title">Luna</div>
+      <div class="header-sub">婦科健康知識助理 · 中文 & Bahasa Indonesia 🌸</div>
     </div>
-    <div class="lang-badge">
-      <div class="online-dot"></div>
-      <span id="online-label">中文 · Bahasa Indonesia · English</span>
-    </div>
-  </div>
-
-  <!-- Tab Bar -->
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-chat" onclick="switchTab('chat')">💬 對話</button>
-    <button class="tab-btn" id="tab-exp" onclick="switchTab('exp')">🔬 實驗記錄</button>
-  </div>
-
-  <!-- Chat View -->
-  <div id="chat-view">
-    <div id="messages"></div>
-    <div id="input-area">
-      <textarea id="user-input" rows="1"
-        placeholder="用中文、印尼文或英文和 Luna 說話..."
-        onkeydown="handleKey(event)"
-        oninput="autoResize(this)"></textarea>
-      <button id="send-btn" onclick="sendMessage()">
-        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-      </button>
+    <div class="header-badge">
+      <div class="dot"></div>
+      <span>線上中</span>
     </div>
   </div>
 
-  <!-- Experiment Log Panel -->
-  <div id="exp-panel">
+  <!-- Messages -->
+  <div id="messages"></div>
 
-    <!-- Sub-tab navigation -->
-    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
-      <div>
-        <div class="exp-title">實驗對照記錄</div>
-        <div class="exp-subtitle">依問題分類查看不同批次數量的回答差異</div>
-      </div>
-      <div style="display:flex; gap:6px;">
-        <button class="export-btn" onclick="exportLog()">⬇ 匯出 CSV</button>
-        <button class="export-btn" onclick="clearAllLog()" style="background:#e57373;">🗑 清除全部</button>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="exp-stats">
-      <div class="stat-card">
-        <div class="stat-label">總對話數</div>
-        <div class="stat-value" id="stat-total">0</div>
-        <div class="stat-sub">則問答</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">無資料庫</div>
-        <div class="stat-value" id="stat-nodb" style="color:#e65100">0</div>
-        <div class="stat-sub">組 A 對照組</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">有資料庫</div>
-        <div class="stat-value" id="stat-withdb" style="color:#2e7d32">0</div>
-        <div class="stat-sub">組 B 實驗組</div>
-      </div>
-    </div>
-
-    <!-- Sub tabs: 依問題分類 / 依時間 -->
-    <div class="exp-sub-tabs">
-      <button class="exp-sub-tab active" id="subtab-q" onclick="switchExpView('q')">📋 依問題分類</button>
-      <button class="exp-sub-tab" id="subtab-time" onclick="switchExpView('time')">🕐 依時間排序</button>
-    </div>
-
-    <!-- View: 依問題分類 -->
-    <div id="exp-view-q" class="exp-view">
-      <!-- Add question row -->
-      <div class="add-q-row">
-        <input type="text" id="new-q-input" placeholder="新增問題（如：白帶異常怎麼辦？）" maxlength="60"/>
-        <button class="add-q-btn" onclick="addQuestion()">＋ 新增</button>
-      </div>
-      <div class="q-list" id="q-list"></div>
-    </div>
-
-    <!-- View: 依時間 -->
-    <div id="exp-view-time" class="exp-view" style="display:none">
-      <div id="exp-entries">
-        <div class="exp-empty">尚無對話記錄 🌸</div>
-      </div>
-    </div>
-
+  <!-- Input area -->
+  <div class="input-area">
+    <textarea id="user-input" rows="1"
+      placeholder="詢問婦科健康問題 / Tanya masalah kesehatan wanita 🌸（Enter 送出）"
+      onkeydown="handleKey(event)"
+      oninput="autoResize(this)"></textarea>
+    <button id="send-btn" onclick="sendMessage()" title="送出">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
   </div>
 </div>
 
 <script>
-  window.onerror = function(msg, src, line) {
-    console.error('Luna error:', msg, 'line:', line);
-    return false;
-  };
-
-  // Safe storage — works on GitHub Pages, silent fail in claude.ai
-  const store = {
-    get(k) { try { return localStorage.getItem(k); } catch(e) { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch(e) {} },
-  };
-
-  let batches = [];
-  let isActive = true;
+  // ── State ─────────────────────────────────────────────────────────────────────
   let isLoading = false;
-  let history = [];
-  let batchCounter = 0;
+  let chatHistory = []; // [{ role: "user"|"model", text: "..." }]
 
-  // Load batches from server
-  async function loadBatches() {
-    try {
-      const res = await fetch('/api/batches');
-      const data = await res.json();
-      batches = data.batches || [];
-      batchCounter = batches.length;
-      renderLog(); updateTotal();
-      if (batches.length) document.getElementById('activate-btn').style.display = 'block';
-    } catch(e) { console.error('loadBatches error:', e); }
-  }
-  const warmOpeners = ['Wah,', 'Aduh,', 'Alhamdulillah,', 'Lho,', 'Eh,', 'Masya Allah,'];
+  // ── Luna SVG (小版，用於訊息泡泡) ─────────────────────────────────────────────
+  const LUNA_SVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none">
+    <circle cx="22" cy="22" r="22" fill="url(#mg)"/>
+    <defs><radialGradient id="mg" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffd6e8"/><stop offset="100%" stop-color="#e8779a"/>
+    </radialGradient></defs>
+    <ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/>
+    <ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/>
+    <ellipse cx="22" cy="12" rx="13" ry="7" fill="#4a2040"/>
+    <ellipse cx="10" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
+    <ellipse cx="34" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
+    <ellipse cx="11" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
+    <ellipse cx="33" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
+    <ellipse cx="18" cy="23" rx="2.5" ry="2.8" fill="white"/>
+    <ellipse cx="26" cy="23" rx="2.5" ry="2.8" fill="white"/>
+    <circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
+    <circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
+    <circle cx="19.2" cy="22.6" r="0.6" fill="white"/>
+    <circle cx="27.2" cy="22.6" r="0.6" fill="white"/>
+    <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
+    <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
+    <path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <circle cx="29" cy="13" r="3" fill="#ff6fa8" opacity="0.9"/>
+    <circle cx="29" cy="13" r="1.5" fill="#ffd6e8"/>
+  </svg>`;
 
-  function exportBatches() {
-    if (!batches.length) { alert('目前沒有資料可以匯出！'); return; }
-    const data = { batches, batchCounter, exportedAt: new Date().toLocaleString('zh-TW') };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `Luna資料庫_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.json`;
-    a.click();
-  }
-
-  function importBatches(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = JSON.parse(e.target.result);
-        if (!data.batches || !Array.isArray(data.batches)) throw new Error('格式錯誤');
-        // Clear and re-upload all batches
-        await fetch('/api/batches', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: 'all' }) });
-        for (const b of data.batches) {
-          await fetch('/api/batches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: b.name, text: b.text }) });
-        }
-        await loadBatches();
-        addSystemMsg(`✅ 成功匯入 ${data.batches.length} 筆資料庫`);
-      } catch(err) {
-        alert('匯入失敗，請確認是正確的 Luna 資料庫 JSON 檔案');
-      }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-  }
-
-
-
-  // ===== EXPERIMENT LOG =====
-  let expLog = [];
-
-  // Load logs from server
-  async function loadLogs() {
-    try {
-      const res = await fetch('/api/logs');
-      const data = await res.json();
-      expLog = data.logs || [];
-      updateExpStats();
-      renderQList();
-      renderTimeLog();
-    } catch(e) { console.error('loadLogs error:', e); }
-  }
-
-
-  // Default preset questions
-  const DEFAULT_QUESTIONS = [
-    '月經不規律是正常的嗎？',
-    '白帶變多需要擔心嗎？',
-    '什麼時候應該去看婦科？',
-    '子宮頸癌疫苗要打幾劑？',
-    '月經來肚子很痛怎麼辦？',
-    '經期延遲可能是什麼原因？',
-    '什麼是多囊性卵巢症候群？',
-  ];
-  let questions = JSON.parse(store.get('luna_questions') || 'null') || [...DEFAULT_QUESTIONS];
-  let openQuestion = null;
-  let activeQBatchIdx = {};
-
-
-  function saveQuestions() { store.set('luna_questions', JSON.stringify(questions)); }
-
-  function switchExpView(view) {
-    document.getElementById('subtab-q').classList.toggle('active', view === 'q');
-    document.getElementById('subtab-time').classList.toggle('active', view === 'time');
-    document.getElementById('exp-view-q').style.display = view === 'q' ? 'flex' : 'none';
-    document.getElementById('exp-view-time').style.display = view === 'time' ? 'flex' : 'none';
-    if (view === 'q') renderQList();
-    if (view === 'time') renderTimeLog();
-  }
-
-  function addQuestion() {
-    const input = document.getElementById('new-q-input');
-    const q = input.value.trim();
-    if (!q) return;
-    if (questions.includes(q)) { input.value = ''; return; }
-    questions.push(q);
-    saveQuestions();
-    input.value = '';
-    renderQList();
-  }
-
-  function deleteQuestion(idx) {
-    questions.splice(idx, 1);
-    saveQuestions();
-    renderQList();
-  }
-
-  function toggleQuestion(idx) {
-    openQuestion = openQuestion === idx ? null : idx;
-    renderQList();
-  }
-
-  function renderQList() {
-    const list = document.getElementById('q-list');
-    if (!list) return;
-    list.innerHTML = questions.map((q, idx) => {
-      // Get all log entries matching this question
-      const entries = expLog.filter(e => e.question.trim() === q.trim());
-      const isOpen = openQuestion === idx;
-
-      // Group entries by batchCount
-      const byBatch = {};
-      entries.forEach(e => {
-        const key = e.hasDB ? `${e.batchNames.length}批` : '無資料';
-        if (!byBatch[key]) byBatch[key] = [];
-        byBatch[key].push(e);
-      });
-      const batchKeys = Object.keys(byBatch).sort((a, b) => {
-        if (a === '無資料') return -1;
-        if (b === '無資料') return 1;
-        return parseInt(a) - parseInt(b);
-      });
-
-      // Active batch tab
-      if (!activeQBatchIdx[idx] && batchKeys.length) activeQBatchIdx[idx] = batchKeys[0];
-      const activeBatch = activeQBatchIdx[idx] || batchKeys[0];
-      const activeEntries = byBatch[activeBatch] || [];
-
-      const batchTabsHtml = batchKeys.map(k => `
-        <button class="batch-tab ${k === '無資料' ? 'no-db' : ''} ${k === activeBatch ? 'active' : ''}"
-          onclick="selectBatchTab(event, ${idx}, '${k}')">${k === '無資料' ? '⭕ 無資料' : `✅ ${k}`}</button>
-      `).join('');
-
-      const answersHtml = activeEntries.slice().reverse().map(e => `
-        <div class="batch-answer" style="margin-bottom:8px">
-          <div class="batch-answer-meta">
-            <span>🕐 ${e.date} ${e.time}</span>
-            ${e.hasDB ? `<span>批次：${e.batchNames.join('、')}</span>` : ''}
-          </div>
-          ${escHtml(e.zhAnswer)}
-        </div>
-      `).join('');
-
-      const detailHtml = isOpen ? `
-        <div class="q-detail">
-          ${batchKeys.length === 0
-            ? '<div style="padding:12px 0; font-size:13px; color:var(--text-muted); font-style:italic;">尚未有這個問題的記錄，對 Luna 提問後會自動歸類在這裡 🌸</div>'
-            : `<div class="batch-tabs">${batchTabsHtml}</div>${answersHtml}`
-          }
-        </div>` : '';
-
-      return `<div class="q-item ${isOpen ? 'open' : ''}">
-        <div class="q-item-header" onclick="toggleQuestion(${idx})">
-          <span class="q-text">${escHtml(q)}</span>
-          <span class="q-count">${entries.length} 筆記錄</span>
-          <span class="q-arrow">▼</span>
-          <button class="q-item-delete" onclick="event.stopPropagation(); deleteQuestion(${idx})">×</button>
-        </div>
-        ${detailHtml}
-      </div>`;
-    }).join('');
-  }
-
-  function selectBatchTab(e, qIdx, batchKey) {
-    e.stopPropagation();
-    activeQBatchIdx[qIdx] = batchKey;
-    renderQList();
-  }
-
-  function renderTimeLog() {
-    const container = document.getElementById('exp-entries');
-    if (!container) return;
-    if (!expLog.length) {
-      container.innerHTML = '<div class="exp-empty">尚無對話記錄 — 開始與 Luna 對話後會自動記錄於此 🌸</div>';
-      return;
-    }
-    const grouped = {};
-    [...expLog].reverse().forEach(e => {
-      if (!grouped[e.date]) grouped[e.date] = [];
-      grouped[e.date].push(e);
-    });
-    container.innerHTML = Object.entries(grouped).map(([date, entries]) => `
-      <div class="exp-date-group">
-        <div class="exp-date-label">📅 ${date}</div>
-        ${entries.map(e => {
-          const tagClass = e.hasDB ? 'tag-with-db' : 'tag-no-db';
-          const tagText = e.hasDB ? `✅ 組B：${e.batchNames.length}批` : '⭕ 組A：無資料庫';
-          const batchInfo = e.hasDB && e.batchNames.length
-            ? `<span class="exp-batch-info">批次：${e.batchNames.join('、')}</span>` : '';
-          return `<div class="exp-entry" data-id="${e.id}">
-            <div class="exp-entry-header">
-              <span class="exp-tag ${tagClass}">${tagText}</span>
-              ${batchInfo}
-              <span class="exp-time">${e.time}</span>
-              <button class="entry-delete-btn" onclick="deleteEntry(this)" title="刪除">🗑</button>
-            </div>
-            <div class="exp-q"><strong>問：</strong>${escHtml(e.question)}</div>
-            <div class="exp-a-label">Luna 回答（中文）</div>
-            <div class="exp-a">${escHtml(e.zhAnswer)}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    `).join('');
-  }
-
-  function switchTab(tab) {
-    document.getElementById('tab-chat').classList.toggle('active', tab === 'chat');
-    document.getElementById('tab-exp').classList.toggle('active', tab === 'exp');
-    document.getElementById('chat-view').style.display = tab === 'chat' ? 'flex' : 'none';
-    document.getElementById('exp-panel').classList.toggle('active', tab === 'exp');
-    if (tab === 'exp') { renderQList(); renderTimeLog(); updateExpStats(); }
-  }
-
-  function logEntry(question, zhAnswer, hasDB, batchNames) {
-    const now = new Date();
-    expLog.push({
-      id: Date.now(),
-      date: now.toLocaleDateString('zh-TW', { year:'numeric', month:'2-digit', day:'2-digit' }),
-      time: now.toLocaleTimeString('zh-TW', { hour:'2-digit', minute:'2-digit' }),
-      question, zhAnswer, hasDB,
-      batchNames: batchNames || []
-    });
-    updateExpStats();
-    if (!questions.includes(question.trim())) {
-      questions.push(question.trim());
-      saveQuestions();
-    }
-    renderQList();
-    renderTimeLog();
-  }
-
-  async function deleteEntry(btn) {
-    const entryEl = btn.closest('.exp-entry');
-    const id = entryEl.dataset.id;
-    try {
-      await fetch('/api/logs', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      expLog = expLog.filter(e => String(e.id) !== id);
-      updateExpStats();
-      entryEl.remove();
-      renderQList();
-      if (!expLog.length) renderTimeLog();
-    } catch(e) { alert('刪除失敗：' + e.message); }
-  }
-
-  async function clearAllLog() {
-    try {
-      await fetch('/api/logs', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: 'all' })
-      });
-      expLog = [];
-      updateExpStats();
-      renderQList();
-      renderTimeLog();
-    } catch(e) { alert('清除失敗：' + e.message); }
-  }
-
-  function updateExpStats() {
-    document.getElementById('stat-total').textContent = expLog.length;
-    document.getElementById('stat-nodb').textContent = expLog.filter(e => !e.hasDB).length;
-    document.getElementById('stat-withdb').textContent = expLog.filter(e => e.hasDB).length;
-  }
-
-  function exportLog() {
-    if (!expLog.length) { alert('目前沒有記錄可以匯出！'); return; }
-    const rows = [['編號','日期','時間','組別','批次數','資料庫批次','問題','Luna回答（中文）']];
-    [...expLog].forEach((e, i) => {
-      rows.push([
-        i+1, e.date, e.time,
-        e.hasDB ? '組B-有資料庫' : '組A-無資料庫',
-        e.hasDB ? e.batchNames.length : 0,
-        e.batchNames.join('|'),
-        e.question.replace(/\n/g,' '),
-        e.zhAnswer.replace(/\n/g,' ')
-      ]);
-    });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-    const blob = new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8;' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `Luna實驗記錄_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
-    a.click();
-  }
-
-  // Init on load
-  updateExpStats();
-
-
-
-  function togglePanel() {
-    const panel = document.getElementById('left-panel');
-    const btn = document.getElementById('toggle-btn');
-    const isCollapsed = panel.classList.toggle('collapsed');
-    btn.classList.toggle('collapsed-btn', isCollapsed);
-    btn.title = isCollapsed ? '展開資料庫' : '收合資料庫';
-  }
-
-  async function addBatch() {
-    const nameEl = document.getElementById('batch-name');
-    const textEl = document.getElementById('knowledge-input');
-    const text = textEl.value.trim();
-    if (!text) { alert('請先貼上資料內容！'); return; }
-    batchCounter++;
-    const name = nameEl.value.trim() || `資料 ${batchCounter}`;
-    nameEl.value = ''; textEl.value = '';
-    try {
-      const res = await fetch('/api/batches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, text })
-      });
-      const data = await res.json();
-      batches = data.batches || [];
-      renderLog(); updateTotal();
-    } catch(e) { alert('儲存失敗：' + e.message); }
-  }
-
-  async function deleteBatch(id) {
-    try {
-      const res = await fetch('/api/batches', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      const data = await res.json();
-      batches = Array.isArray(data.batches) ? data.batches : [];
-      renderLog(); updateTotal();
-      if (!batches.length) {
-        document.getElementById('activate-btn').style.display = 'none';
-        document.getElementById('total-badge').style.display = 'none';
-      }
-    } catch(e) { alert('刪除失敗：' + e.message); }
-  }
-
-  async function cleanEmptyBatches() {
-    const empty = batches.filter(b => !b.text || b.text.trim() === '' || !b.chars);
-    if (!empty.length) { alert('沒有空資料！'); return; }
-    for (const b of empty) {
-      await fetch('/api/batches', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: b.id })
-      });
-    }
-    await loadBatches();
-    alert(`已清除 ${empty.length} 筆空資料 🌸`);
-  }
-
-  async function clearAll() {
-    try {
-      await fetch('/api/batches', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: 'all' })
-      });
-      batches = []; history = []; batchCounter = 0;
-      renderLog(); updateTotal();
-      document.getElementById('activate-btn').style.display = 'none';
-      document.getElementById('total-badge').style.display = 'none';
-      document.getElementById('online-label').textContent = '中文 · Bahasa Indonesia · English';
-      document.getElementById('messages').innerHTML = '';
-      addSystemMsg('資料庫已清除，Luna 仍可用基本婦科知識回答 🌸');
-    } catch(e) { alert('清除失敗：' + e.message); }
-  }
-
-  function renderLog() {
-    const log = document.getElementById('training-log');
-    document.getElementById('db-count').textContent = batches.length + ' 筆';
-    if (!batches.length) {
-      log.innerHTML = '<div class="log-empty">尚未加入任何資料</div>';
-      return;
-    }
-    log.innerHTML = batches.map((b, i) => `
-      <div class="log-item">
-        <div class="log-item-left">
-          <div class="log-num">${i+1}</div>
-          <div>
-            <div class="log-name">${escHtml(b.name)}</div>
-            <div class="log-chars">${(b.chars || 0).toLocaleString()} 字元</div>
-          </div>
-        </div>
-        <button class="log-delete" onclick="deleteBatch('${b.id}')" title="刪除">×</button>
-      </div>
-    `).join('');
-    document.getElementById('activate-btn').style.display = 'block';
-  }
-
-  function updateTotal() {
-    const total = (batches || []).reduce((s, b) => s + (b.chars || 0), 0);
-    const badge = document.getElementById('total-badge');
-    if (total > 0) {
-      badge.style.display = 'flex';
-      document.getElementById('total-text').textContent = `共 ${batches.length} 批 · ${total.toLocaleString()} 字元`;
-    } else { badge.style.display = 'none'; }
-  }
-
-  function activateLuna() {
-    if (!batches.length) { alert('請先加入至少一筆資料！'); return; }
-    history = [];
-    document.getElementById('online-label').textContent = '已就緒 · Siap';
-    const msgs = document.getElementById('messages');
-    msgs.innerHTML = '';
-    addSystemMsg(`資料庫已更新，Luna 載入了 ${batches.length} 筆資料 🌸`);
-    const opener = warmOpeners[Math.floor(Math.random() * warmOpeners.length)];
-    addBotBilingual(
-      `${opener} selamat datang！🌙\n\n你好，我是 Luna，你的婦科健康小夥伴！\n\n我可以陪你聊關於婦科的各種問題，不管是身體的不舒服、月經、還是看診前的疑問，都可以問我哦 💛\n\n例如你可以問我：\n• 「月經不規律是正常的嗎？」\n• 「白帶變多需要擔心嗎？」\n• 「什麼時候應該去看婦科？」\n• 「子宮頸癌疫苗要打幾劑？」\n• 「月經來肚子很痛怎麼辦？」\n\n有什麼想問的，就直接說吧，我不會評判你的 🌸`,
-      `${opener} selamat datang！🌙\n\nHalo! Aku Luna, teman kesehatan ginekologi perempuanmu!\n\nKamu bisa tanya aku soal kesehatan kandungan dan reproduksi — apapun yang ada di pikiranmu, aku siap menemanimu 💛\n\nMisalnya kamu bisa tanya:\n• "Haid tidak teratur, apa normal?"\n• "Keputihan banyak, perlu khawatir?"\n• "Kapan harus periksa ke dokter kandungan?"\n• "Vaksin kanker serviks harus berapa kali?"\n• "Nyeri haid parah, gimana mengatasinya?"\n\nJangan malu ya — tanyakan saja, aku di sini untukmu 🌸`
-    );
-  }
-
-  async function sendMessage() {
-    if (isLoading || !isActive) return;
-    const input = document.getElementById('user-input');
-    const q = input.value.trim();
-    if (!q) return;
-
-    input.value = ''; input.style.height = 'auto';
-    isLoading = true;
-    document.getElementById('send-btn').disabled = true;
-
-    addUserMsg(q);
-    history.push({ role: 'user', content: q });
-    showTyping();
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: q, history: history.slice(0, -1) })
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      const raw = data.text || '很抱歉，發生了問題。|||Maaf, ada masalah teknis.';
-      removeTyping();
-      const sepIdx = raw.indexOf('|||');
-      const zhPart = (sepIdx >= 0 ? raw.slice(0, sepIdx) : raw).trim();
-      const idPart = (sepIdx >= 0 ? raw.slice(sepIdx + 3) : '').trim();
-      addBotBilingual(zhPart, idPart);
-      history.push({ role: 'assistant', content: raw });
-      // Update local expLog from server
-      loadLogs();
-    } catch (e) {
-      removeTyping();
-      addBotBilingual(
-        `Aduh~ 發生了技術問題：${e.message || '請稍後再試'} 🙏`,
-        `Aduh~ Ada masalah teknis: ${e.message || 'Coba lagi nanti ya'} 🙏`
-      );
-      console.error(e);
-    }
-
-    isLoading = false;
-    document.getElementById('send-btn').disabled = false;
-    input.focus();
-  }
-
-  function addSystemMsg(text) {
-    const msgs = document.getElementById('messages');
-    const d = document.createElement('div');
-    d.className = 'system-msg'; d.textContent = text;
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
-  }
-
+  // ── Helpers ───────────────────────────────────────────────────────────────────
   function getTime() {
     return new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
   }
 
-  function addUserMsg(text) {
-    const msgs = document.getElementById('messages');
-    const d = document.createElement('div');
-    d.className = 'message user';
-    d.innerHTML = `<div class="msg-avatar">👤</div>
-      <div class="bubble-wrap">
-        <div class="sender-name">你 <span class="msg-time">${getTime()}</span></div>
-        <div class="bubble">${escHtml(text)}</div>
-      </div>`;
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+  function escHtml(str) {
+    return (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
   }
 
-  function addBotBilingual(zhText, idText) {
+  function scrollToBottom() {
     const msgs = document.getElementById('messages');
-    const d = document.createElement('div');
-    d.className = 'message bot';
-    const lunaSVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="22" cy="22" r="22" fill="url(#bgrad)"/>
-      <defs><radialGradient id="bgrad" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffd6e8"/><stop offset="100%" stop-color="#e8779a"/></radialGradient></defs>
-      <ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/>
-      <ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/>
-      <ellipse cx="22" cy="12" rx="13" ry="7" fill="#4a2040"/>
-      <ellipse cx="10" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-      <ellipse cx="34" cy="22" rx="3.5" ry="6" fill="#4a2040"/>
-      <ellipse cx="11" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-      <ellipse cx="33" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/>
-      <ellipse cx="18" cy="23" rx="2.5" ry="2.8" fill="white"/>
-      <ellipse cx="26" cy="23" rx="2.5" ry="2.8" fill="white"/>
-      <circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-      <circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/>
-      <circle cx="19.2" cy="22.6" r="0.6" fill="white"/>
-      <circle cx="27.2" cy="22.6" r="0.6" fill="white"/>
-      <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-      <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/>
-      <path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      <circle cx="29" cy="13" r="3" fill="#ff6fa8" opacity="0.9"/>
-      <circle cx="29" cy="13" r="1.5" fill="#ffd6e8"/>
-      <circle cx="29" cy="13" r="0.7" fill="#ff6fa8"/>
-    </svg>`;
-    const idBlock = idText ? `
-      <div class="lang-divider"><span>Bahasa Indonesia</span></div>
-      <div class="id-section">${escHtml(idText)}</div>` : '';
-    d.innerHTML = `<div class="msg-avatar">${lunaSVG}</div>
-      <div class="bubble-wrap">
-        <div class="sender-name">Luna <span class="msg-time">${getTime()}</span></div>
-        <div class="bubble">
-          <div class="zh-section">${escHtml(zhText)}</div>
-          ${idBlock}
-        </div>
-      </div>`;
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
-  }
-
-  function showTyping() {
-    const msgs = document.getElementById('messages');
-    const d = document.createElement('div');
-    d.className = 'message bot'; d.id = 'typing-msg';
-    const lunaSVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="22" cy="22" r="22" fill="url(#tgrad)"/><defs><radialGradient id="tgrad" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#ffd6e8"/><stop offset="100%" stop-color="#e8779a"/></radialGradient></defs><ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/><ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/><ellipse cx="22" cy="12" rx="13" ry="7" fill="#4a2040"/><ellipse cx="10" cy="22" rx="3.5" ry="6" fill="#4a2040"/><ellipse cx="34" cy="22" rx="3.5" ry="6" fill="#4a2040"/><ellipse cx="11" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/><ellipse cx="33" cy="24" rx="2.2" ry="2.8" fill="#fcd5b0"/><ellipse cx="18" cy="23" rx="2.5" ry="2.8" fill="white"/><ellipse cx="26" cy="23" rx="2.5" ry="2.8" fill="white"/><circle cx="18.6" cy="23.4" r="1.6" fill="#3d1a2e"/><circle cx="26.6" cy="23.4" r="1.6" fill="#3d1a2e"/><circle cx="19.2" cy="22.6" r="0.6" fill="white"/><circle cx="27.2" cy="22.6" r="0.6" fill="white"/><ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/><ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#f48fb1" opacity="0.45"/><path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="29" cy="13" r="3" fill="#ff6fa8" opacity="0.9"/><circle cx="29" cy="13" r="1.5" fill="#ffd6e8"/><circle cx="29" cy="13" r="0.7" fill="#ff6fa8"/></svg>`;
-    d.innerHTML = `<div class="msg-avatar">${lunaSVG}</div>
-      <div class="bubble-wrap"><div class="bubble">
-        <div class="typing-indicator"><span></span><span></span><span></span></div>
-      </div></div>`;
-    msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
-  }
-
-  function removeTyping() {
-    const el = document.getElementById('typing-msg');
-    if (el) el.remove();
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   function autoResize(el) {
@@ -2422,24 +404,162 @@ ${dbCtx}`;
   }
 
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   }
 
-  function escHtml(str) {
-    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  // ── Render helpers ────────────────────────────────────────────────────────────
+
+  // 將回答依 --- 分成中文段 / 印尼文段，分別渲染
+  function renderBotContent(text) {
+    const parts = text.split(/\n---\n|\n---$/);
+    if (parts.length >= 2) {
+      const zh  = parts[0].trim();
+      const id  = parts.slice(1).join('\n---\n').trim();
+      return `
+        <div class="lang-block zh-block">
+          <div class="lang-tag">🇹🇼 繁體中文</div>
+          <div class="lang-text">${escHtml(zh)}</div>
+        </div>
+        <div class="lang-block id-block">
+          <div class="lang-tag">🇮🇩 Bahasa Indonesia</div>
+          <div class="lang-text">${escHtml(id)}</div>
+        </div>`;
+    }
+    // fallback: 純文字
+    return `<div class="lang-text">${escHtml(text)}</div>`;
   }
 
-  // Show greeting after all functions are defined
-  (function showGreeting() {
-    const opener = warmOpeners[Math.floor(Math.random() * warmOpeners.length)];
-    addBotBilingual(
-      `${opener} selamat datang！🌙\n\n你好，我是 Luna，你的婦科健康小夥伴！\n\n我可以陪你聊關於婦科的各種問題，不管是身體的不舒服、月經、還是看診前的疑問，都可以問我哦 💛\n\n例如你可以問我：\n• 「月經不規律是正常的嗎？」\n• 「白帶變多需要擔心嗎？」\n• 「什麼時候應該去看婦科？」\n• 「子宮頸癌疫苗要打幾劑？」\n• 「月經來肚子很痛怎麼辦？」\n\n有什麼想問的，就直接說吧，我不會評判你的 🌸`,
-      `${opener} selamat datang！🌙\n\nHalo! Aku Luna, teman kesehatan ginekologi perempuanmu!\n\nKamu bisa tanya aku soal kesehatan kandungan dan reproduksi — apapun yang ada di pikiranmu, aku siap menemanimu 💛\n\nMisalnya kamu bisa tanya:\n• "Haid tidak teratur, apa normal?"\n• "Keputihan banyak, perlu khawatir?"\n• "Kapan harus periksa ke dokter kandungan?"\n• "Vaksin kanker serviks harus berapa kali?"\n• "Nyeri haid parah, gimana mengatasinya?"\n\nJangan malu ya — tanyakan saja, aku di sini untukmu 🌸`
-    );
-    renderQList();
-    // Load data from server
-    loadBatches();
-    loadLogs();
+  function addMessage(role, text) {
+    const msgs = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'message ' + role;
+
+    const isBot = role === 'bot';
+    const contentHtml = isBot ? renderBotContent(text) : escHtml(text);
+
+    div.innerHTML = `
+      <div class="msg-av">${isBot ? LUNA_SVG : '👤'}</div>
+      <div class="bubble-wrap">
+        <div class="sender">${isBot ? 'Luna' : '你 / Kamu'}<span class="msg-time">${getTime()}</span></div>
+        <div class="bubble">${contentHtml}</div>
+      </div>`;
+
+    msgs.appendChild(div);
+    scrollToBottom();
+    return div;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'message bot';
+    div.id = 'typing-indicator';
+    div.innerHTML = `
+      <div class="msg-av">${LUNA_SVG}</div>
+      <div class="bubble-wrap">
+        <div class="sender">Luna</div>
+        <div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+      </div>`;
+    msgs.appendChild(div);
+    scrollToBottom();
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function showError(msg) {
+    const msgs = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.className = 'error-msg';
+    div.textContent = '⚠️ ' + msg;
+    msgs.appendChild(div);
+    scrollToBottom();
+  }
+
+  // ── Send message ──────────────────────────────────────────────────────────────
+  async function sendMessage() {
+    if (isLoading) return;
+
+    const input = document.getElementById('user-input');
+    const prompt = input.value.trim();
+    if (!prompt) return;
+
+    // Reset input
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('send-btn').disabled = true;
+    isLoading = true;
+
+    // Show user message
+    addMessage('user', prompt);
+    chatHistory.push({ role: 'user', text: prompt });
+
+    // Show typing
+    showTyping();
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          history: chatHistory.slice(-20) // 最多帶 20 則歷史
+        })
+      });
+
+      removeTyping();
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || '伺服器錯誤 (' + res.status + ')');
+      }
+
+      const data = await res.json();
+      const reply = data.reply || '（無回應）';
+
+      addMessage('bot', reply);
+      chatHistory.push({ role: 'model', text: reply });
+
+    } catch (err) {
+      removeTyping();
+      showError(err.message || '連線失敗，請稍後再試');
+      // 移除失敗的 user history
+      chatHistory.pop();
+    }
+
+    isLoading = false;
+    document.getElementById('send-btn').disabled = false;
+    input.focus();
+  }
+
+  // ── 初始歡迎訊息（雙語） ──────────────────────────────────────────────────────
+  (function init() {
+    const welcome =
+      '嗨！我是 Luna，你的婦科健康知識助理 🌸\n\n' +
+      '我可以用 中文 及 印尼文（Bahasa Indonesia）解答你的婦科相關問題，例如：\n\n' +
+      '• 月經不規律或痛經是什麼原因？\n' +
+      '• 白帶異常代表什麼？\n' +
+      '• 多囊性卵巢症候群（PCOS）是什麼？\n' +
+      '• 子宮頸抹片檢查多久做一次？\n' +
+      '• 更年期有哪些常見症狀？\n\n' +
+      '你可以用中文、印尼文或英文提問，我都能理解並同時用兩種語言回答你 💬\n\n' +
+      '⚠️ 免責聲明：本服務提供之內容僅供衛教參考，不構成醫療診斷。如有身體不適，請務必就醫。' +
+      '\n---\n' +
+      'Halo! Saya Luna, asisten kesehatan wanita Anda 🌸\n\n' +
+      'Saya bisa menjawab pertanyaan seputar kesehatan ginekologi dalam Bahasa Mandarin dan Bahasa Indonesia, misalnya:\n\n' +
+      '• Apa penyebab menstruasi tidak teratur atau nyeri haid?\n' +
+      '• Apa arti keputihan yang tidak normal?\n' +
+      '• Apa itu Sindrom Ovarium Polikistik (PCOS)?\n' +
+      '• Seberapa sering harus melakukan Pap smear?\n' +
+      '• Apa saja gejala umum menopause?\n\n' +
+      'Anda bisa bertanya dalam Bahasa Mandarin, Indonesia, atau Inggris — saya akan memahami dan menjawab dalam dua bahasa 💬\n\n' +
+      '⚠️ Penafian: Informasi ini hanya bersifat edukatif dan bukan pengganti saran medis profesional. Jika ada keluhan, segera konsultasikan ke dokter.';
+    addMessage('bot', welcome);
   })();
 </script>
 </body>
