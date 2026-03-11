@@ -1,113 +1,101 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { buildKnowledgeContext } = require("../knowledge.js");
 
-const SYSTEM_INSTRUCTION = `你是 Luna，一個溫暖、有印尼文化共感的女性健康 AI 夥伴，專注於婦科與女性生殖健康議題。
+// ── 初始化 Gemini ──────────────────────────────────────────────────────────────
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-## 語言規則（最重要，必須嚴格遵守）
-無論使用者用任何語言提問（中文、印尼文、英文），你必須將回答分成兩個段落輸出：
-- 第一段：用繁體中文完整回答
-- 然後輸出分隔符號「|||」
-- 第二段：用印尼文（Bahasa Indonesia）完整回答
+// ── System Instruction：在此定義機器人角色 ────────────────────────────────────
+// 知識庫內容會在每次請求時動態注入
+function buildSystemInstruction() {
+  const knowledgeContext = buildKnowledgeContext(); // 從 knowledge.js 載入
 
-## 內容規則
-- 醫療與婦科問題：只能根據知識庫內容回答
-- 若找不到對應答案，說「這個問題我目前的資料庫裡還沒有相關資訊，建議你諮詢專業醫師哦 🌸」
-- 日常聊天可以自然回應
+  return `
+你是一位名叫 Luna 的專業婦科健康知識助理 🌸，個性溫柔、有耐心、富有同理心。
+你的使命是用平易近人的方式，提供婦科健康相關的衛教知識，幫助使用者更了解自己的身體。
 
-## 個性與語調
-- 偶爾使用印尼語感嘆詞：Wah、Aduh、Alhamdulillah、Lho、Masya Allah
-- 語調溫暖，像懂你的姊妹
+【語言規則 - 非常重要】
+無論使用者用中文、印尼文（Bahasa Indonesia）或英文提問，你的每一則回覆都必須同時包含以下兩段：
 
-## 免責聲明（每次回答結尾必須附上）
-中文版：「⚠️ 以上資訊僅供參考，不構成醫療診斷或建議。如有身體不適，請務必諮詢專業醫師。」
-印尼文版：「⚠️ Informasi di atas hanya untuk referensi dan bukan merupakan diagnosis atau saran medis. Jika kamu merasa tidak nyaman, segera konsultasikan dengan dokter.」`;
+第一段：繁體中文回答（完整內容）
+---
+第二段：印尼文翻譯（Bahasa Indonesia）（完整內容）
 
-async function kvGet(key) {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  try {
-    const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const text = await res.text();
-    const data = JSON.parse(text);
-    if (!data.result) return [];
-    let parsed = data.result;
-    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
-    if (typeof parsed === 'string') try { parsed = JSON.parse(parsed); } catch(e) { return []; }
-    return Array.isArray(parsed) ? parsed : [];
-  } catch(e) {
-    console.error('kvGet error:', e.message);
-    return [];
-  }
-}/get/${key}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const data = await res.json();
-  if (!data.result) return null;
-  try {
-    return typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
-  } catch(e) {
-    return null;
-  }
+兩段之間用「---」分隔線隔開，缺一不可。
+
+【回答主題範圍】
+- 月經週期與異常（月經不規律、痛經、閉經等）
+- 陰道保健與感染（白帶、黴菌感染、細菌性陰道炎等）
+- 子宮與卵巢相關疾病（子宮肌瘤、多囊性卵巢症候群、子宮內膜異位症等）
+- 停經與更年期症狀
+- 婦科定期檢查與癌症篩檢（子宮頸抹片、HPV 疫苗等）
+- 懷孕前後的婦科知識
+- 避孕方式的基本知識
+
+【回答原則】
+- 語氣溫柔、不評判，讓使用者感到安心
+- 說明清楚，使用條列式整理複雜資訊
+- 若問題涉及具體症狀診斷或用藥，務必提醒使用者就醫
+- 若知識庫中有相關內容，優先根據知識庫回答；知識庫沒有的部分，用你的專業知識補充
+- 每則回覆結尾，必須附上以下免責聲明（中文＋印尼文）：
+
+⚠️ 免責聲明：本服務提供之內容僅供衛教參考，不構成醫療診斷或治療建議。如有身體不適或疑慮，請務必諮詢婦產科醫師。
+⚠️ Penafian: Informasi yang diberikan hanya bersifat edukatif dan bukan pengganti diagnosis atau saran medis profesional. Jika Anda mengalami gejala atau kekhawatiran, segera konsultasikan dengan dokter kandungan.
+${knowledgeContext}
+`.trim();
 }
 
-async function kvSet(key, value) {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(JSON.stringify(value))
-  });
-  return res.json();
-}
-
+// ── Serverless Function Handler ───────────────────────────────────────────────
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  // 只允許 POST
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  // 檢查 API Key
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("GEMINI_API_KEY is not set");
+    return res.status(500).json({ error: "伺服器設定錯誤：缺少 API 金鑰" });
+  }
+
+  const { prompt, history = [] } = req.body;
+
+  if (!prompt || typeof prompt !== "string" || prompt.trim() === "") {
+    return res.status(400).json({ error: "請提供有效的 prompt" });
+  }
 
   try {
-    const { prompt, history } = req.body;
-    if (!prompt) return res.status(400).json({ error: '缺少 prompt' });
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      systemInstruction: buildSystemInstruction(), // 動態注入知識庫
+    });
 
-    const batches = await kvGet('luna_batches') || [];
-    const knowledgeText = batches.map((b, i) => `【資料 ${i+1}：${b.name}】\n${b.text}`).join('\n\n---\n\n');
+    // 建立對話（帶入歷史紀錄）
+    const chat = model.startChat({
+      history: history.map((msg) => ({
+        role: msg.role,           // "user" | "model"
+        parts: [{ text: msg.text }],
+      })),
+      generationConfig: {
+        maxOutputTokens: 2500,
+        temperature: 0.7,
+      },
+    });
 
-    const systemWithKB = knowledgeText
-      ? SYSTEM_INSTRUCTION + '\n\n## 知識庫資料（嚴格只能根據以下內容回答）\n' + knowledgeText
-      : SYSTEM_INSTRUCTION + '\n\n## 知識庫狀態：空白\n醫療問題只能回答資料庫空白提示，日常聊天可正常回應。';
-
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash', systemInstruction: systemWithKB });
-
-    const chatHistory = (history || [])
-      .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }))
-      .filter((_, i, arr) => !(i === 0 && arr[0].role === 'model'));
-
-    const chat = model.startChat({ history: chatHistory });
-    const result = await chat.sendMessage(prompt);
+    const result = await chat.sendMessage(prompt.trim());
     const text = result.response.text();
 
-    const logs = await kvGet('luna_expLog') || [];
-    const now = new Date();
-    logs.push({
-      id: Date.now(),
-      date: now.toLocaleDateString('zh-TW'),
-      time: now.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-      question: prompt,
-      zhAnswer: text.split('|||')[0]?.trim() || text,
-      hasDB: batches.length > 0,
-      batchNames: batches.map(b => b.name)
-    });
-    if (logs.length > 500) logs.splice(0, logs.length - 500);
-    await kvSet('luna_expLog', logs);
-
-    res.status(200).json({ text });
+    return res.status(200).json({ reply: text });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message || '伺服器錯誤' });
+    console.error("Gemini API Error:", err);
+
+    // 回傳友善的錯誤訊息
+    const message =
+      err.message?.includes("API_KEY_INVALID")
+        ? "API 金鑰無效，請確認 GEMINI_API_KEY 設定是否正確"
+        : err.message?.includes("quota")
+        ? "已超過 API 使用額度，請稍後再試"
+        : "AI 服務暫時無法使用，請稍後再試";
+
+    return res.status(500).json({ error: message });
   }
 };
