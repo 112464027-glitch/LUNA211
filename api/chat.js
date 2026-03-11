@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
   try {
     // 2. 直接使用原生 fetch 呼叫 V1 穩定版路徑 (避開 SDK 的 v1beta 錯誤)
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${API_KEY}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
