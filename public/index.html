@@ -137,6 +137,27 @@
   .lang-tag { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
   .lang-text { font-size: 13.5px; line-height: 1.8; color: var(--text); white-space: pre-wrap; }
 
+  /* Quick example chips */
+  .example-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+  }
+  .chip {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 13px;
+    font-size: 12px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.18s;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(214,51,132,0.09);
+  }
+  .chip:hover { background: var(--pink-pale); border-color: var(--accent); transform: translateY(-1px); }
+
   /* DB & LOG Styles */
   #db-panel, #log-panel { padding: 20px; gap: 16px; overflow-y: auto; }
   .db-upload-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 32px; text-align: center; background: white; cursor: pointer; }
@@ -155,7 +176,54 @@
 
 <div class="header">
   <div class="header-avatar">
-    <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="#ffd6e8"/><ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/><ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/><circle cx="18" cy="23" r="2" fill="black"/><circle cx="26" cy="23" r="2" fill="black"/><path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" fill="none"/></svg>
+    <!-- Cute girl avatar: big eyes, rosy cheeks, hair with bow -->
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="22" r="22" fill="#FFD6E8"/>
+      <!-- Hair back -->
+      <ellipse cx="22" cy="17" rx="13" ry="13" fill="#3B1F1F"/>
+      <!-- Hair side pieces -->
+      <ellipse cx="10" cy="22" rx="4.5" ry="7" fill="#3B1F1F"/>
+      <ellipse cx="34" cy="22" rx="4.5" ry="7" fill="#3B1F1F"/>
+      <!-- Neck -->
+      <rect x="18" y="32" width="8" height="5" rx="2" fill="#FDDCB5"/>
+      <!-- Face -->
+      <ellipse cx="22" cy="24" rx="11" ry="11" fill="#FDDCB5"/>
+      <!-- Blush left -->
+      <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#F9A8C9" opacity="0.7"/>
+      <!-- Blush right -->
+      <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#F9A8C9" opacity="0.7"/>
+      <!-- Eyes white -->
+      <ellipse cx="18" cy="23" rx="3" ry="3.2" fill="white"/>
+      <ellipse cx="26" cy="23" rx="3" ry="3.2" fill="white"/>
+      <!-- Iris -->
+      <circle cx="18" cy="23.5" r="1.9" fill="#4A2F6B"/>
+      <circle cx="26" cy="23.5" r="1.9" fill="#4A2F6B"/>
+      <!-- Pupil -->
+      <circle cx="18.4" cy="23.2" r="0.85" fill="black"/>
+      <circle cx="26.4" cy="23.2" r="0.85" fill="black"/>
+      <!-- Eye shine -->
+      <circle cx="18.9" cy="22.6" r="0.5" fill="white"/>
+      <circle cx="26.9" cy="22.6" r="0.5" fill="white"/>
+      <!-- Eyelashes top left -->
+      <line x1="15.3" y1="20.4" x2="14.5" y2="19.4" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <line x1="17.5" y1="19.8" x2="17.2" y2="18.7" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <line x1="19.7" y1="20.2" x2="19.9" y2="19.1" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <!-- Eyelashes top right -->
+      <line x1="23.3" y1="20.4" x2="22.5" y2="19.4" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <line x1="25.5" y1="19.8" x2="25.2" y2="18.7" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <line x1="27.7" y1="20.2" x2="27.9" y2="19.1" stroke="#3B1F1F" stroke-width="0.7" stroke-linecap="round"/>
+      <!-- Nose (tiny) -->
+      <ellipse cx="22" cy="27" rx="1" ry="0.6" fill="#E8A882" opacity="0.7"/>
+      <!-- Smile -->
+      <path d="M19 30 Q22 32.5 25 30" stroke="#D6637A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <!-- Hair bow on top right -->
+      <path d="M27 10 Q30 7 32 10 Q30 12 27 10Z" fill="#FF80B0"/>
+      <path d="M27 10 Q24 7 22 10 Q24 12 27 10Z" fill="#FF80B0"/>
+      <circle cx="27" cy="10" r="1.8" fill="#FF4D94"/>
+      <!-- Hair fringe/bangs -->
+      <path d="M11 19 Q14 11 22 10 Q30 11 33 19" fill="#3B1F1F"/>
+      <path d="M12 19 Q15 15 19 14" stroke="#3B1F1F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
   </div>
   <div>
     <div class="header-title">Luna</div>
@@ -216,13 +284,11 @@ let chatHistory = [];
 let dbEntries = [];
 let expLog = [];
 
-// 存檔：把資料庫和記錄寫入瀏覽器硬碟
 function persistToStorage() {
     localStorage.setItem('luna_db_v2', JSON.stringify(dbEntries));
     localStorage.setItem('luna_log_v2', JSON.stringify(expLog));
 }
 
-// 讀取：網頁載入時恢復資料
 function loadFromStorage() {
     const savedDb = localStorage.getItem('luna_db_v2');
     const savedLog = localStorage.getItem('luna_log_v2');
@@ -234,7 +300,31 @@ function loadFromStorage() {
     renderLog();
 }
 
-const LUNA_SVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none"><circle cx="22" cy="22" r="22" fill="#ffd6e8"/><ellipse cx="22" cy="18" rx="13" ry="14" fill="#4a2040"/><ellipse cx="22" cy="24" rx="11" ry="12" fill="#fde8d0"/><circle cx="18" cy="23" r="2" fill="black"/><circle cx="26" cy="23" r="2" fill="black"/><path d="M18.5 30 Q22 33 25.5 30" stroke="#d6637a" fill="none"/></svg>`;
+// ── Cute girl Luna SVG (34x34, same design as header but smaller) ──
+const LUNA_SVG = `<svg width="34" height="34" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="22" cy="22" r="22" fill="#FFD6E8"/>
+  <ellipse cx="22" cy="17" rx="13" ry="13" fill="#3B1F1F"/>
+  <ellipse cx="10" cy="22" rx="4.5" ry="7" fill="#3B1F1F"/>
+  <ellipse cx="34" cy="22" rx="4.5" ry="7" fill="#3B1F1F"/>
+  <rect x="18" y="32" width="8" height="5" rx="2" fill="#FDDCB5"/>
+  <ellipse cx="22" cy="24" rx="11" ry="11" fill="#FDDCB5"/>
+  <ellipse cx="14.5" cy="26.5" rx="3" ry="1.8" fill="#F9A8C9" opacity="0.7"/>
+  <ellipse cx="29.5" cy="26.5" rx="3" ry="1.8" fill="#F9A8C9" opacity="0.7"/>
+  <ellipse cx="18" cy="23" rx="3" ry="3.2" fill="white"/>
+  <ellipse cx="26" cy="23" rx="3" ry="3.2" fill="white"/>
+  <circle cx="18" cy="23.5" r="1.9" fill="#4A2F6B"/>
+  <circle cx="26" cy="23.5" r="1.9" fill="#4A2F6B"/>
+  <circle cx="18.4" cy="23.2" r="0.85" fill="black"/>
+  <circle cx="26.4" cy="23.2" r="0.85" fill="black"/>
+  <circle cx="18.9" cy="22.6" r="0.5" fill="white"/>
+  <circle cx="26.9" cy="22.6" r="0.5" fill="white"/>
+  <ellipse cx="22" cy="27" rx="1" ry="0.6" fill="#E8A882" opacity="0.7"/>
+  <path d="M19 30 Q22 32.5 25 30" stroke="#D6637A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M27 10 Q30 7 32 10 Q30 12 27 10Z" fill="#FF80B0"/>
+  <path d="M27 10 Q24 7 22 10 Q24 12 27 10Z" fill="#FF80B0"/>
+  <circle cx="27" cy="10" r="1.8" fill="#FF4D94"/>
+  <path d="M11 19 Q14 11 22 10 Q30 11 33 19" fill="#3B1F1F"/>
+</svg>`;
 
 // ════════════════════════════════════════════════════
 // UI 功能
@@ -261,14 +351,38 @@ function renderBotContent(text) {
   return `<div class="lang-text">${escHtml(text)}</div>`;
 }
 
-function addMessage(role, text) {
+// Example questions chips
+const EXAMPLE_QUESTIONS = [
+  '😣 生理痛怎麼辦？',
+  '📅 月經不規律正常嗎？',
+  '🩸 經血量太多怎麼處理？',
+  '🌡️ 白帶異常要注意什麼？',
+  '💊 避孕藥怎麼使用？',
+  '🔍 多囊性卵巢症候群是什麼？',
+  '🤰 子宮肌瘤需要治療嗎？',
+  '🧬 子宮頸癌疫苗幾歲打？',
+];
+
+function renderExampleChips() {
+  return `<div class="example-chips">${EXAMPLE_QUESTIONS.map(q =>
+    `<button class="chip" onclick="useChip(this)">${q}</button>`
+  ).join('')}</div>`;
+}
+
+function useChip(btn) {
+  document.getElementById('user-input').value = btn.textContent.replace(/^[\u{1F300}-\u{1FFFF}\u{2600}-\u{26FF}\s]+/u, '').trim();
+  sendMessage();
+}
+
+function addMessage(role, text, withChips) {
   const msgs = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'message ' + role;
   const isBot = role === 'bot';
+  const chipsHtml = (isBot && withChips) ? renderExampleChips() : '';
   div.innerHTML = `<div class="msg-av">${isBot ? LUNA_SVG : '👤'}</div><div class="bubble-wrap">
     <div class="sender">${isBot ? 'Luna' : '你'}<span class="msg-time">${new Date().toLocaleTimeString()}</span></div>
-    <div class="bubble">${isBot ? renderBotContent(text) : escHtml(text)}</div></div>`;
+    <div class="bubble">${isBot ? renderBotContent(text) : escHtml(text)}${chipsHtml}</div></div>`;
   msgs.appendChild(div);
   scrollToBottom();
 }
@@ -296,7 +410,7 @@ async function sendMessage() {
   const dbContext = dbEntries.map(e => `[${e.name}]: ${e.content}`).join('\n');
 
   try {
-    const res = await fetch('/api/chat', { // 對應 Vercel api/chat.js
+    const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -315,7 +429,6 @@ async function sendMessage() {
     addMessage('bot', reply);
     chatHistory.push({ role: 'user', content: prompt }, { role: 'model', content: reply });
     
-    // 紀錄實驗數據並存檔
     expLog.unshift({ time: new Date().toLocaleString(), question: prompt, answer: reply, hasDb: dbEntries.length > 0 });
     updateStats();
     persistToStorage(); 
@@ -332,7 +445,7 @@ async function sendMessage() {
 }
 
 // ════════════════════════════════════════════════════
-// 資料庫邏輯 (加上存檔)
+// 資料庫邏輯
 // ════════════════════════════════════════════════════
 function onFileSelect(e) { 
     const f = e.target.files[0]; 
@@ -419,7 +532,30 @@ function clearLog() {
 window.onload = () => {
     loadFromStorage();
     if (chatHistory.length === 0) {
-        addMessage('bot', '嗨！我是 Luna 🌸\n我可以協助解答婦科健康問題，並同時用中文與印尼文回答。\n---\nHalo! Saya Luna 🌸\nSaya dapat membantu menjawab pertanyaan kesehatan ginekologi dalam bahasa Mandarin dan Indonesia.');
+        const greetText = `嗨！我是 Luna 🌸 你的專屬婦科健康知識助理！
+
+我可以幫你解答各種婦科相關問題，例如：
+• 月經異常、生理痛、月經週期計算
+• 白帶、陰道感染、私密處保養
+• 避孕方式、緊急避孕藥使用
+• 子宮肌瘤、多囊性卵巢、子宮內膜異位
+• 子宮頸癌疫苗、婦科定期檢查
+• 更年期症狀與保健
+
+你可以直接點選下方範例，或自由發問 💕
+---
+Halo! Saya Luna 🌸 Asisten pengetahuan kesehatan ginekologi kamu!
+
+Saya bisa membantu menjawab berbagai pertanyaan seputar kesehatan wanita, seperti:
+• Menstruasi tidak teratur, nyeri haid, siklus menstruasi
+• Keputihan, infeksi vagina, perawatan area intim
+• Kontrasepsi, pil darurat
+• Miom, PCOS, endometriosis
+• Vaksin HPV, pemeriksaan ginekologi rutin
+• Gejala menopause & perawatannya
+
+Klik contoh di bawah atau tanya bebas ya 💕`;
+        addMessage('bot', greetText, true);
     }
 };
 </script>
