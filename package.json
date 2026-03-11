@@ -1,7 +1,6 @@
 {
   "name": "luna-app",
   "version": "1.0.0",
-  "main": "api/chat.js",
   "dependencies": {
     "@google/generative-ai": "^0.21.0"
   }
