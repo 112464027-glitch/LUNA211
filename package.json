@@ -1,19 +1,7 @@
 {
   "name": "luna-chatbot",
   "version": "1.0.0",
-  "description": "Luna — 圖資系 AI 助教，使用 Gemini API",
-  "main": "index.js",
-  "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel --prod"
-  },
   "dependencies": {
     "@google/generative-ai": "^0.21.0"
-  },
-  "devDependencies": {
-    "vercel": "^37.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
